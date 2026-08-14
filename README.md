@@ -1,2 +1,0 @@
-# shukatsu-compass
-AIコンパス
