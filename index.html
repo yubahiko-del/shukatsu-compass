@@ -1,0 +1,2525 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>就活AIコンパス</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Zen+Old+Mincho:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#16213e;
+    --navy-deep:#0f1730;
+    --gold:#c9a227;
+    --gold-soft:#e4c766;
+    --paper:#f6f4ee;
+    --card:#ffffff;
+    --ink:#232323;
+    --ink-soft:#6b6b6b;
+    --line:#e4e1d8;
+    --danger:#b3372c;
+    --danger-bg:#fbeae7;
+    --ok:#3c7a5c;
+    --priority-high:#d98c93;
+    --priority-high-bg:#fbeef0;
+    --priority-mid:#c9a24b;
+    --priority-mid-bg:#faf3e2;
+    --priority-low:#7fb494;
+    --priority-low-bg:#eef6f1;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    font-family:'Zen Kaku Gothic New', sans-serif;
+    background:var(--paper);
+    color:var(--ink);
+    display:flex;
+    height:100vh;
+    overflow:hidden;
+  }
+  h1,h2,h3{font-family:'Zen Old Mincho', serif; margin:0;}
+
+  /* ---------- 情報選択エリア (左) ---------- */
+  .nav{
+    width:20%;
+    min-width:210px;
+    max-width:280px;
+    background:linear-gradient(180deg,var(--navy) 0%, var(--navy-deep) 100%);
+    color:#fff;
+    display:flex;
+    flex-direction:column;
+    padding:24px 16px;
+    flex-shrink:0;
+    overflow-y:auto;
+  }
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:0 6px 20px;
+    border-bottom:1px solid rgba(255,255,255,.12);
+    margin-bottom:18px;
+  }
+  .brand svg{flex-shrink:0;}
+  .brand-text{line-height:1.2;}
+  .brand-text .main{font-family:'Zen Old Mincho', serif; font-size:17px; font-weight:700; letter-spacing:.03em;}
+  .brand-text .sub{font-size:10px; letter-spacing:.18em; color:var(--gold-soft); margin-top:2px;}
+
+  .nav-btn{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    background:none;
+    border:none;
+    color:rgba(255,255,255,.72);
+    text-align:left;
+    font-family:inherit;
+    font-size:14.5px;
+    padding:11px 12px;
+    border-radius:8px;
+    cursor:pointer;
+    margin-bottom:4px;
+    transition:background .15s ease, color .15s ease;
+  }
+  .nav-btn:hover{background:rgba(255,255,255,.07); color:#fff;}
+  .nav-btn.active{background:rgba(201,162,39,.16); color:var(--gold-soft); font-weight:700;}
+  .nav-btn .dot{width:6px; height:6px; border-radius:50%; background:currentColor; opacity:.6; flex-shrink:0;}
+
+  /* クラウド同期・認証ボックス */
+  .auth-box{
+    margin-top:auto;
+    background:rgba(255,255,255,.06);
+    border:1px solid rgba(255,255,255,.12);
+    border-radius:10px;
+    padding:12px;
+    margin-bottom:12px;
+  }
+  .auth-box .atitle{font-size:11px; letter-spacing:.08em; color:var(--gold-soft); font-weight:700; margin-bottom:6px; display:flex; align-items:center; justify-content:space-between;}
+  .auth-status{font-size:11.5px; color:rgba(255,255,255,.8); line-height:1.4; margin-bottom:8px; word-break:break-all;}
+  .auth-btn{
+    width:100%;
+    display:flex; align-items:center; justify-content:center; gap:6px;
+    background:#fff; color:var(--navy); border:none; border-radius:6px;
+    padding:7px 10px; font-size:11.5px; font-weight:700; cursor:pointer; font-family:inherit;
+    transition:background .15s;
+  }
+  .auth-btn:hover{background:#f0eee6;}
+  .auth-btn.logout{background:rgba(255,255,255,.15); color:#fff; border:1px solid rgba(255,255,255,.25);}
+  .auth-btn.logout:hover{background:rgba(255,255,255,.25);}
+
+  .shortcut-box{
+    background:rgba(255,255,255,.04);
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:10px;
+    padding:10px 12px;
+  }
+  .shortcut-box .stitle{font-size:10px; letter-spacing:.1em; color:rgba(255,255,255,.5); font-weight:700; margin-bottom:6px;}
+  .shortcut-box ul{list-style:none; margin:0; padding:0;}
+  .shortcut-box li{display:flex; align-items:center; justify-content:space-between; gap:8px; font-size:11px; color:rgba(255,255,255,.7); padding:3px 0;}
+  .kbd{
+    font-family:'SFMono-Regular',Consolas,Menlo,monospace;
+    font-size:10px;
+    background:rgba(255,255,255,.13);
+    border:1px solid rgba(255,255,255,.2);
+    border-radius:4px;
+    padding:1px 5px;
+    color:#fff;
+    white-space:nowrap;
+  }
+  .nav-foot{margin-top:8px; font-size:10px; color:rgba(255,255,255,.4); padding:0 4px; line-height:1.5;}
+
+  /* ---------- 表示エリア ---------- */
+  .stage{
+    flex:1;
+    overflow-y:auto;
+    padding:36px 44px 60px;
+  }
+  .page{display:none;}
+  .page.active{display:block; animation:fade .25s ease;}
+  #page-ai{padding-bottom:70px;}
+  @keyframes fade{from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:translateY(0);}}
+
+  .page-head{margin-bottom:26px;}
+  .page-head .eyebrow{font-size:11px; letter-spacing:.18em; color:var(--gold); font-weight:700; text-transform:uppercase;}
+  .page-head h2{font-size:24px; margin-top:4px;}
+  .page-head p{color:var(--ink-soft); font-size:13px; margin-top:6px; line-height:1.6;}
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:22px 24px;
+    margin-bottom:18px;
+    position:relative;
+    box-shadow:0 1px 2px rgba(20,20,20,.03);
+  }
+  .card.active-focus{border-color:var(--gold);}
+  .card.priority-high{border:2px solid var(--priority-high);}
+  .card.priority-mid{border:2px solid var(--priority-mid);}
+  .card.priority-low{border:2px solid var(--priority-low);}
+  .priority-badge{font-size:10.5px; padding:2px 9px; border-radius:100px; font-weight:700; letter-spacing:.02em;}
+  .priority-badge.high{background:var(--priority-high-bg); color:var(--priority-high);}
+  .priority-badge.mid{background:var(--priority-mid-bg); color:var(--priority-mid);}
+  .priority-badge.low{background:var(--priority-low-bg); color:var(--priority-low);}
+  .card-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:14px;
+  }
+  .card-head h3{font-size:15px; letter-spacing:.02em;}
+  .badge{
+    font-size:10.5px;
+    padding:2px 9px;
+    border-radius:100px;
+    font-weight:700;
+    letter-spacing:.02em;
+  }
+  .badge.done{background:#e7f2ec; color:var(--ok);}
+  .badge.todo{background:#f1efe6; color:var(--ink-soft);}
+
+  .icon-btn{
+    border:1px solid var(--line);
+    background:#fff;
+    color:var(--navy);
+    font-size:12.5px;
+    padding:6px 13px;
+    border-radius:7px;
+    cursor:pointer;
+    font-family:inherit;
+    font-weight:500;
+    transition:background .15s;
+  }
+  .icon-btn:hover{background:#f2f0e8;}
+  .icon-btn.danger{color:var(--danger); border-color:#eed3ce;}
+  .icon-btn.danger:hover{background:var(--danger-bg);}
+  .icon-btn.gold{background:var(--navy); color:var(--gold-soft); border-color:var(--navy);}
+  .icon-btn.gold:hover{background:var(--navy-deep);}
+
+  .field-row{display:flex; gap:14px; flex-wrap:wrap; margin-bottom:2px;}
+  .field{flex:1 1 220px; margin-bottom:14px;}
+  .field label{display:block; font-size:12px; color:var(--ink-soft); margin-bottom:5px; font-weight:500;}
+  .field input[type=text], .field input[type=url], .field textarea, .field select{
+    width:100%;
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:9px 11px;
+    font-family:inherit;
+    font-size:13.5px;
+    color:var(--ink);
+    background:#fdfcf9;
+  }
+  .field textarea{resize:vertical; min-height:64px; line-height:1.55;}
+  .field input:focus, .field textarea:focus, .field select:focus{outline:2px solid var(--gold); outline-offset:0; border-color:var(--gold);}
+  .field .hint{font-size:11px; color:#a8a396; margin-top:4px;}
+
+  .view-value{font-size:13.5px; line-height:1.7; color:var(--ink); white-space:pre-wrap; min-height:18px;}
+  .view-value.empty{color:#b3b0a4; font-style:italic;}
+  .view-label{font-size:11.5px; color:var(--ink-soft); font-weight:500; margin-bottom:2px;}
+  .view-grid{display:grid; grid-template-columns:1fr 1fr; gap:14px 22px;}
+  @media (max-width:900px){.view-grid{grid-template-columns:1fr;}}
+
+  .save-row{display:flex; gap:8px; margin-top:6px;}
+  .form-error{
+    background:var(--danger-bg);
+    color:var(--danger);
+    font-size:12.5px;
+    padding:10px 14px;
+    border-radius:7px;
+    margin-bottom:12px;
+    display:none;
+    font-weight:500;
+    line-height:1.8;
+  }
+  .form-error.show{display:block;}
+
+  .sub-list{display:flex; flex-direction:column; gap:12px;}
+  .sub-item{
+    border:1px solid var(--line);
+    border-radius:9px;
+    padding:14px 16px;
+    background:#fdfcf9;
+    position:relative;
+  }
+  .sub-item-head{display:flex; justify-content:space-between; align-items:flex-start; gap:8px; margin-bottom:6px;}
+  .sub-item-title{font-weight:700; font-size:13.5px;}
+  .sub-actions{display:flex; gap:6px; flex-shrink:0;}
+  .add-btn{
+    display:flex; align-items:center; justify-content:center; gap:6px;
+    width:100%;
+    border:1.5px dashed var(--line);
+    background:transparent;
+    color:var(--ink-soft);
+    padding:11px;
+    border-radius:9px;
+    cursor:pointer;
+    font-family:inherit;
+    font-size:13px;
+    font-weight:500;
+    margin-top:4px;
+  }
+  .add-btn:hover{border-color:var(--gold); color:var(--navy); background:#fdf9ee;}
+
+  /* ---------- 駅チップ ---------- */
+  .chip-list{display:flex; flex-wrap:wrap; gap:7px; margin-top:6px;}
+  .chip{
+    display:flex; align-items:center; gap:6px;
+    background:#f1efe6; border:1px solid var(--line); border-radius:100px;
+    padding:5px 8px 5px 12px; font-size:12.5px; color:var(--navy);
+  }
+  .chip button{
+    border:none; background:rgba(0,0,0,.08); color:var(--navy);
+    width:16px; height:16px; border-radius:50%; cursor:pointer; font-size:10px; line-height:1;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .station-add-row{display:flex; gap:8px; margin-top:8px;}
+  .station-add-row input{flex:1;}
+
+  .commute-box{
+    margin-top:14px; padding:12px 14px; background:#fdf9ee; border:1px solid #eee0b8; border-radius:9px;
+  }
+  .commute-box .ctitle{font-size:12px; font-weight:700; color:var(--navy); margin-bottom:8px;}
+  .commute-row{display:flex; justify-content:space-between; font-size:12.5px; padding:4px 0; border-bottom:1px dashed #ecdfb0;}
+  .commute-row:last-child{border-bottom:none;}
+  .commute-links{display:flex; gap:6px; flex-wrap:wrap;}
+  .commute-link-btn{
+    font-size:11px;
+    font-weight:700;
+    color:var(--navy);
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:100px;
+    padding:3px 10px;
+    text-decoration:none;
+    white-space:nowrap;
+  }
+  .commute-link-btn:hover{background:#f2f0e8; border-color:var(--gold);}
+  .commute-note{font-size:10.5px; color:#a8a396; margin-top:6px; line-height:1.6;}
+
+  /* ---------- 支社住所リスト ---------- */
+  .branch-list{display:flex; flex-direction:column; gap:8px; margin-top:6px;}
+  .branch-row{display:flex; gap:8px; align-items:center;}
+  .branch-row input{flex:1;}
+  .branch-row .branch-label-input{flex:0 0 120px;}
+  .branch-remove-btn{
+    border:1px solid var(--line); background:#fff; color:var(--danger); width:30px; height:30px; flex-shrink:0;
+    border-radius:7px; cursor:pointer; font-size:13px; line-height:1;
+  }
+  .branch-remove-btn:hover{background:var(--danger-bg);}
+  .branch-view-row{font-size:12px; color:var(--ink-soft); margin-top:2px;}
+  .branch-view-row .blabel{font-weight:700; color:var(--ink);}
+
+  /* ---------- カレンダーモーダル ---------- */
+  .cal-head-row{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;}
+  .cal-nav-btn{border:1px solid var(--line); background:#fff; color:var(--navy); width:32px; height:32px; border-radius:7px; cursor:pointer; font-size:14px;}
+  .cal-nav-btn:hover{background:#f2f0e8;}
+  .cal-month-label{font-family:'Zen Old Mincho',serif; font-size:16px; font-weight:700; color:var(--navy);}
+  .cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:5px;}
+  .cal-dow{text-align:center; font-size:11px; color:var(--ink-soft); font-weight:700; padding-bottom:4px;}
+  .cal-cell{min-height:78px; border:1px solid var(--line); border-radius:8px; padding:5px 5px; background:#fdfcf9; overflow:hidden;}
+  .cal-cell.other-month{opacity:.35;}
+  .cal-cell.today{border-color:var(--gold); background:#fdf9ee;}
+  .cal-daynum{font-size:11px; font-weight:700; color:var(--ink-soft); margin-bottom:3px;}
+  .cal-cell.today .cal-daynum{color:var(--navy);}
+  .cal-event{font-size:9.5px; background:var(--navy); color:var(--gold-soft); border-radius:4px; padding:1px 4px; margin-bottom:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .cal-event .cal-event-time{opacity:.75; margin-right:2px;}
+  .home-schedule-more-btn{margin-top:4px;}
+
+  /* ---------- 企業タグ（BtoB/BtoCなど） ---------- */
+  .biz-tags{display:flex; flex-wrap:wrap; gap:5px; margin-top:5px;}
+  .biz-tag{
+    font-size:10.5px; font-weight:700; color:var(--navy); background:#eef1f8;
+    border:1px solid #d8deee; border-radius:100px; padding:2px 9px;
+  }
+  .biz-checkbox-row{display:flex; flex-wrap:wrap; gap:12px; margin-top:6px;}
+  .biz-checkbox-row label{display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;}
+  .biz-tag.test-tag{color:var(--gold); background:#fdf6e3; border-color:#f0dfa8;}
+
+  /* ---------- 企業カード内タブ ---------- */
+  .mini-tabs{display:flex; gap:6px; margin-bottom:16px; border-bottom:1px solid var(--line); padding-bottom:10px;}
+  .mini-tab-btn{
+    border:1px solid var(--line); background:#fff; color:var(--ink-soft);
+    font-family:inherit; font-size:12px; font-weight:500; padding:6px 13px;
+    border-radius:100px; cursor:pointer;
+  }
+  .mini-tab-btn:hover{border-color:var(--gold);}
+  .mini-tab-btn.active{background:var(--navy); color:var(--gold-soft); border-color:var(--navy);}
+
+  /* ---------- スケジュール ---------- */
+  .schedule-item{
+    border:1px solid var(--line); border-radius:9px; padding:12px 14px; margin-bottom:10px;
+    background:#fdfcf9; display:flex; gap:12px; align-items:flex-start;
+  }
+  .schedule-date-badge{
+    flex-shrink:0; width:56px; text-align:center; background:var(--navy); color:var(--gold-soft);
+    border-radius:8px; padding:6px 4px; font-family:'Zen Old Mincho',serif;
+  }
+  .schedule-date-badge .md{font-size:15px; font-weight:700; line-height:1.1;}
+  .schedule-date-badge .y{font-size:9.5px; opacity:.75;}
+  .schedule-body{flex:1; min-width:0;}
+  .schedule-type{font-weight:700; font-size:13.5px;}
+  .schedule-memo{font-size:12px; color:var(--ink-soft); margin-top:3px; line-height:1.6; white-space:pre-wrap;}
+  .schedule-actions{display:flex; gap:6px; flex-shrink:0;}
+  .schedule-nodate{color:#b3b0a4; font-size:11px;}
+
+  /* ---------- ホーム: 直近スケジュール ---------- */
+  .home-schedule-card{margin-bottom:18px;}
+  .home-schedule-list{display:flex; flex-direction:column; gap:8px;}
+
+  /* ---------- ホーム: 週間カレンダーストリップ ---------- */
+  .home-week-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:8px; overflow-x:auto;}
+  .home-week-cell{
+    border:1px solid var(--line); border-radius:9px; background:#fdfcf9; padding:8px 7px; min-height:96px;
+    display:flex; flex-direction:column; gap:5px;
+  }
+  .home-week-cell.today{border-color:var(--gold); background:#fdf9ee;}
+  .home-week-head{display:flex; flex-direction:column; align-items:center; text-align:center; gap:1px; padding-bottom:5px; border-bottom:1px dashed var(--line);}
+  .home-week-head .hw-dow{font-size:10px; color:var(--ink-soft); font-weight:700;}
+  .home-week-head .hw-date{font-family:'Zen Old Mincho',serif; font-size:14px; font-weight:700; color:var(--navy);}
+  .home-week-cell.today .home-week-head .hw-date{color:var(--gold);}
+  .home-week-events{display:flex; flex-direction:column; gap:3px;}
+  .home-week-event{
+    font-size:9.5px; line-height:1.4; background:var(--navy); color:var(--gold-soft); border-radius:5px; padding:3px 5px;
+    overflow:hidden;
+  }
+  .home-week-event .hwe-time{display:block; opacity:.75; font-size:9px;}
+  .home-week-event .hwe-name{display:block; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .home-week-event .hwe-type{display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .home-week-empty{font-size:10px; color:#c9c5b8; text-align:center; padding-top:6px;}
+  @media (max-width:768px){
+    .home-week-grid{grid-template-columns:repeat(7,84px); gap:7px;}
+  }
+
+  /* ---------- ホーム ---------- */
+  .home-grid{display:grid; grid-template-columns:1.3fr 1fr; gap:18px;}
+  @media (max-width:1000px){.home-grid{grid-template-columns:1fr;}}
+  .progress-wrap{display:flex; align-items:center; gap:16px; margin-bottom:16px;}
+  .ring{position:relative; width:74px; height:74px; flex-shrink:0;}
+  .ring svg{transform:rotate(-90deg);}
+  .ring-label{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:700; color:var(--navy); font-family:'Zen Old Mincho',serif;}
+  .checklist{list-style:none; padding:0; margin:0;}
+  .checklist li{display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid var(--line); font-size:13.5px;}
+  .checklist li:last-child{border-bottom:none;}
+  .check-mark{width:18px; height:18px; border-radius:5px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:900;}
+  .check-mark.on{background:var(--ok); color:#fff;}
+  .check-mark.off{background:#eee; color:transparent; border:1px solid var(--line);}
+  .company-count{display:flex; align-items:baseline; gap:8px; margin:10px 0 4px;}
+  .company-count .num{font-family:'Zen Old Mincho',serif; font-size:40px; color:var(--navy); font-weight:700;}
+  .company-count .unit{font-size:13px; color:var(--ink-soft);}
+  .complete-banner{
+    margin-top:14px; background:linear-gradient(135deg,#16213e,#0f1730); color:var(--gold-soft);
+    padding:14px 16px; border-radius:10px; font-weight:700; font-size:14px; text-align:center;
+    letter-spacing:.03em;
+  }
+
+  /* ---------- タブ (就活メモ) ---------- */
+  .tabs{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:20px; border-bottom:1px solid var(--line); padding-bottom:14px;}
+  .tab-btn{
+    border:1px solid var(--line); background:#fff; color:var(--ink-soft);
+    font-family:inherit; font-size:12.5px; font-weight:500; padding:8px 15px;
+    border-radius:100px; cursor:pointer; display:flex; align-items:center; gap:6px;
+  }
+  .tab-btn .tbadge{width:7px; height:7px; border-radius:50%; background:#ddd;}
+  .tab-btn .tbadge.on{background:var(--ok);}
+  .tab-btn:hover{border-color:var(--gold);}
+  .tab-btn.active{background:var(--navy); color:var(--gold-soft); border-color:var(--navy);}
+
+  /* ---------- AI相談 ---------- */
+  .ai-grid{display:grid; grid-template-columns:1fr 1fr; gap:18px; align-items:start; margin-bottom:18px;}
+  .ai-grid > .card{margin-bottom:0;}
+  @media (max-width:1100px){.ai-grid{grid-template-columns:1fr;}}
+  .tree-major{border:1px solid var(--line); border-radius:10px; margin-bottom:10px; overflow:hidden;}
+  .tree-major-head{display:flex; align-items:center; gap:9px; padding:11px 14px; background:#f9f7f1; font-weight:700; font-size:13.5px; cursor:pointer;}
+  .tree-major-head.disabled{cursor:default; color:#b3b0a4;}
+  .tree-sub{padding:8px 14px 12px 38px; display:flex; flex-direction:column; gap:7px;}
+  .tree-sub label{display:flex; align-items:flex-start; gap:8px; font-size:13px; line-height:1.5; cursor:pointer;}
+  .tree-sub .content-preview{color:var(--ink-soft); font-size:12px;}
+  input[type=checkbox]{width:15px; height:15px; accent-color:var(--navy); flex-shrink:0; margin-top:1px; cursor:pointer;}
+
+  .company-pick{border:1px solid var(--line); border-radius:9px; padding:12px 14px; margin-bottom:9px; display:flex; align-items:flex-start; gap:10px; cursor:pointer; background:#fdfcf9;}
+  .company-pick.selected{border-color:var(--gold); background:#fdf9ee;}
+  .company-pick .cname{font-weight:700; font-size:13.5px;}
+  .company-pick .cindustry{font-size:12px; color:var(--ink-soft); margin-top:2px;}
+
+  .selected-summary{
+    background:#f9f7f1; border:1px solid var(--line); border-radius:10px; padding:14px 18px; margin-bottom:18px;
+  }
+  .selected-summary .stitle{font-size:11.5px; letter-spacing:.08em; color:var(--gold); font-weight:700; margin-bottom:8px;}
+  .selected-summary .srow{display:flex; gap:10px; font-size:13px; padding:3px 0;}
+  .selected-summary .slabel{color:var(--ink-soft); flex-shrink:0; width:88px;}
+  .selected-summary .sval{font-weight:500;}
+  .selected-summary.empty{color:#b3b0a4; font-style:italic; font-size:12.5px;}
+
+  .gen-btn{
+    position:fixed;
+    right:40px;
+    bottom:32px;
+    background:var(--navy);
+    color:var(--gold-soft);
+    border:none;
+    padding:15px 26px;
+    border-radius:100px;
+    font-family:inherit;
+    font-size:14px;
+    font-weight:700;
+    cursor:pointer;
+    letter-spacing:.02em;
+    box-shadow:0 8px 24px rgba(15,23,48,.28);
+    z-index:40;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .gen-btn::before{content:"✦"; font-size:13px; color:var(--gold);}
+  .gen-btn:hover{background:var(--navy-deep); box-shadow:0 10px 28px rgba(15,23,48,.36);}
+  @media (max-width:640px){
+    .gen-btn{right:20px; bottom:20px; padding:13px 20px; font-size:13px;}
+  }
+
+  .empty-state{text-align:center; padding:44px 20px; color:var(--ink-soft);}
+  .empty-state .glyph{font-size:30px; margin-bottom:10px;}
+  .empty-state p{font-size:13px; line-height:1.7; margin:0;}
+
+  /* ---------- モーダル ---------- */
+  .modal-overlay{
+    display:none; position:fixed; inset:0; background:rgba(15,23,48,.55); z-index:100;
+    align-items:center; justify-content:center; padding:30px;
+  }
+  .modal-overlay.show{display:flex;}
+  .modal-box{
+    background:#fff; border-radius:14px; width:100%; max-width:760px; max-height:86vh;
+    display:flex; flex-direction:column; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,.3);
+  }
+  .modal-head{
+    background:var(--navy); color:var(--gold-soft); padding:16px 22px; font-family:'Zen Old Mincho',serif;
+    font-size:16px; font-weight:700; display:flex; justify-content:space-between; align-items:center;
+  }
+  .modal-head .mbtns{display:flex; align-items:center; gap:10px;}
+  .modal-head button{font-family:inherit; font-size:12.5px; font-weight:700; background:var(--gold); color:var(--navy); border:none; padding:8px 16px; border-radius:7px; cursor:pointer;}
+  .modal-head button:hover{background:var(--gold-soft);}
+  .modal-head .close-btn{background:transparent; color:rgba(255,255,255,.7); font-size:18px; padding:4px 8px;}
+  .modal-head .close-btn:hover{background:rgba(255,255,255,.1); color:#fff;}
+  .modal-msg{font-size:11.5px; font-weight:400; color:#7fdba0;}
+  .modal-body{padding:22px; overflow-y:auto;}
+  .modal-body pre{white-space:pre-wrap; word-break:break-word; background:#fdfcf9; border:1px solid var(--line); border-radius:10px; padding:20px; font-family:'SFMono-Regular',Consolas,Menlo,monospace; font-size:12.5px; line-height:1.75; margin:0;}
+
+  ::-webkit-scrollbar{width:9px;}
+  ::-webkit-scrollbar-thumb{background:#d8d4c6; border-radius:6px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+
+  select{appearance:none; -webkit-appearance:none; background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'><path fill='%23888' d='M5.5 7l4.5 5 4.5-5z'/></svg>"); background-repeat:no-repeat; background-position:right 10px center; padding-right:30px;}
+
+  /* ---------- モバイルメニュー ---------- */
+  .mobile-menu-btn{
+    display:none; position:fixed; top:14px; left:14px; z-index:210;
+    width:42px; height:42px; border-radius:10px; border:none; background:var(--navy); color:var(--gold-soft);
+    font-size:19px; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 4px 14px rgba(15,23,48,.32);
+  }
+  .nav-overlay{display:none; position:fixed; inset:0; background:rgba(15,23,48,.45); z-index:150;}
+  .nav-overlay.show{display:block;}
+
+  @media (max-width:768px){
+    body{display:block; height:auto; min-height:100vh; overflow:visible;}
+    .mobile-menu-btn{display:flex;}
+    .nav{
+      position:fixed; top:0; left:0; height:100vh; z-index:200; width:70%; max-width:260px; min-width:0;
+      padding:22px 14px;
+      transform:translateX(-100%); transition:transform .25s ease; box-shadow:0 0 30px rgba(0,0,0,.35);
+    }
+    .nav.nav-open{transform:translateX(0);}
+    .shortcut-box{display:none;}
+    .stage{width:100%; height:auto; overflow-y:visible; padding:64px 16px 60px;}
+    .field-row{gap:10px;}
+    .modal-box{max-width:94vw;}
+    .home-week-grid{grid-template-columns:repeat(7,78px);}
+    .ai-grid{grid-template-columns:1fr;}
+
+    .tabs{
+      flex-wrap:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch;
+      gap:8px; border-bottom:none; padding:2px 16px 12px;
+      margin:0 -16px 16px;
+      -ms-overflow-style:none; scrollbar-width:none;
+    }
+    .tabs::-webkit-scrollbar{display:none;}
+    .tab-btn{
+      flex:0 0 auto; white-space:nowrap; font-size:12px; padding:8px 14px;
+      box-shadow:0 1px 3px rgba(20,20,20,.05);
+    }
+    .tab-btn.active{box-shadow:0 3px 10px rgba(15,23,48,.22);}
+  }
+</style>
+</head>
+<body>
+
+<button id="mobile-menu-btn" class="mobile-menu-btn" aria-label="メニューを開く">☰</button>
+<div class="nav-overlay" id="nav-overlay"></div>
+<nav class="nav" id="main-nav">
+  <div class="brand">
+    <svg width="30" height="30" viewBox="0 0 30 30" fill="none">
+      <circle cx="15" cy="15" r="13.5" stroke="#c9a227" stroke-width="1.4"/>
+      <path d="M15 6 L18 15 L15 24 L12 15 Z" fill="#e4c766"/>
+      <circle cx="15" cy="15" r="1.6" fill="#16213e"/>
+    </svg>
+    <div class="brand-text">
+      <div class="main">就活AIコンパス</div>
+      <div class="sub">SHUKATSU COMPASS</div>
+    </div>
+  </div>
+  <button class="nav-btn active" data-page="home"><span class="dot"></span>ホーム</button>
+  <button class="nav-btn" data-page="notes"><span class="dot"></span>就活メモ</button>
+  <button class="nav-btn" data-page="companies"><span class="dot"></span>企業情報</button>
+  <button class="nav-btn" data-page="ai"><span class="dot"></span>AI相談</button>
+
+  <!-- クラウド共有・ログインエリア -->
+  <div class="auth-box">
+    <div class="atitle">
+      <span>☁ 端末間データ共有</span>
+    </div>
+    <div class="auth-status" id="auth-status-text">未ログイン（端末保存）</div>
+    <button id="auth-main-btn" class="auth-btn">Googleでログイン</button>
+  </div>
+
+  <div class="shortcut-box">
+    <div class="stitle">編集コマンド</div>
+    <ul>
+      <li><span>保存</span><span class="kbd">Ctrl+S</span></li>
+      <li><span>編集</span><span class="kbd">Ctrl+E</span></li>
+      <li><span>削除</span><span class="kbd">Ctrl+D</span></li>
+    </ul>
+  </div>
+
+  <div class="nav-foot" id="storage-foot-text">データはこの端末（localStorage）に保存されています。</div>
+</nav>
+
+<main class="stage">
+
+  <!-- ============ ホーム ============ -->
+  <section class="page active" id="page-home">
+    <div class="page-head">
+      <div class="eyebrow">Home</div>
+      <h2>進捗ダッシュボード</h2>
+      <p>就活メモと企業情報の登録状況をひと目で確認できます。</p>
+    </div>
+    <div class="card home-schedule-card">
+      <div class="card-head"><h3>直近1週間のスケジュール</h3><button class="icon-btn home-schedule-more-btn" id="schedule-more-btn">もっと見る</button></div>
+      <div id="home-schedule-list"></div>
+    </div>
+    <div class="home-grid">
+      <div class="card">
+        <div class="card-head"><h3>就活メモ 登録状況</h3></div>
+        <div class="progress-wrap">
+          <div class="ring">
+            <svg width="74" height="74">
+              <circle cx="37" cy="37" r="31" stroke="#eee" stroke-width="7" fill="none"/>
+              <circle id="ring-fg" cx="37" cy="37" r="31" stroke="#c9a227" stroke-width="7" fill="none" stroke-linecap="round" stroke-dasharray="194.7" stroke-dashoffset="194.7"/>
+            </svg>
+            <div class="ring-label" id="ring-label">0%</div>
+          </div>
+          <div style="font-size:12.5px; color:var(--ink-soft); line-height:1.7;">登録済みの項目数に応じて<br>進捗率が上がります。</div>
+        </div>
+        <ul class="checklist" id="home-checklist"></ul>
+        <div id="complete-banner-wrap"></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>企業情報 登録状況</h3></div>
+        <div class="company-count"><span class="num" id="home-company-count">0</span><span class="unit">社 登録済み</span></div>
+        <p style="font-size:12.5px; color:var(--ink-soft); line-height:1.7;">「企業情報」から志望企業を登録すると、AI相談でその企業に合わせたプロンプトを作成できます。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 就活メモ ============ -->
+  <section class="page" id="page-notes">
+    <div class="page-head">
+      <div class="eyebrow">Notes</div>
+      <h2>就活メモ</h2>
+      <p>プロフィールや自己分析などを登録しておくと、AI相談のプロンプトに反映できます。</p>
+    </div>
+    <div class="tabs" id="notes-tabs"></div>
+    <div id="notes-container"></div>
+  </section>
+
+  <!-- ============ 企業情報 ============ -->
+  <section class="page" id="page-companies">
+    <div class="page-head">
+      <div class="eyebrow">Companies</div>
+      <h2>企業情報</h2>
+      <p>志望企業の情報を登録します。複数社を登録し、AI相談で使用する企業を選びます。</p>
+    </div>
+    <div class="card" style="margin-bottom:18px; padding:16px 20px;">
+      <div class="field-row" style="margin-bottom:0;">
+        <div class="field" style="margin-bottom:0;">
+          <label>志望度で絞り込み</label>
+          <select id="company-filter-priority">
+            <option value="">すべて</option>
+            <option value="高">高</option>
+            <option value="中">中</option>
+            <option value="低">低</option>
+            <option value="未設定">未設定</option>
+          </select>
+        </div>
+        <div class="field" style="margin-bottom:0;">
+          <label>業界で絞り込み</label>
+          <select id="company-filter-industry">
+            <option value="">すべての業界</option>
+          </select>
+        </div>
+        <div class="field" style="margin-bottom:0;">
+          <label>並び替え</label>
+          <select id="company-sort">
+            <option value="default">登録順</option>
+            <option value="priority">志望度順 (高→低)</option>
+            <option value="name">企業名 (五十音順)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div id="companies-container"></div>
+    <button class="add-btn" id="add-company-btn">＋ 企業を追加</button>
+  </section>
+
+  <!-- ============ AI相談 ============ -->
+  <section class="page" id="page-ai">
+    <div class="page-head">
+      <div class="eyebrow">AI Consultation</div>
+      <h2>AI相談</h2>
+      <p>使用する就活メモと企業を選び、相談内容を選択してプロンプトを生成します。</p>
+    </div>
+
+    <div class="selected-summary" id="selected-summary"></div>
+
+    <div class="form-error" id="ai-error"></div>
+
+    <div class="card">
+      <div class="card-head"><h3>① 相談内容を選択</h3></div>
+      <div class="field" style="margin-bottom:10px;">
+        <select id="ai-consultation">
+          <option value="">選択してください</option>
+          <option>選択した企業にあったガクチカ（学内）を考える</option>
+          <option>選択した企業にあったガクチカ（学外）を考える</option>
+          <option>選択した企業にあった面接対策を考える</option>
+          <option>選択した企業にあった志望動機を考える</option>
+          <option value="__judge__">自分に合う企業か判定する</option>
+          <option value="__compare__">企業を比較する</option>
+          <option value="__similar__">類似企業を考える</option>
+          <option value="__free__">自由記述で相談する</option>
+        </select>
+      </div>
+      <div class="field" id="ai-consultation-free-wrap" style="margin-bottom:0; display:none;">
+        <label>相談内容 自由記述</label>
+        <textarea id="ai-consultation-free" rows="3" placeholder="例）この企業の面接で聞かれそうな質問と回答例を考えてほしい"></textarea>
+        <div class="hint">自由記述を選ぶと企業は複数選択できます。</div>
+      </div>
+      <div class="field" style="margin-bottom:0;">
+        <label>ES回答テキストの文字数目安</label>
+        <input type="text" id="ai-char-limit" placeholder="例）400字">
+        <div class="hint">空欄の場合は目安なしで生成されます。</div>
+      </div>
+    </div>
+
+    <div class="ai-grid">
+      <div class="card">
+        <div class="card-head"><h3>② 就活メモを選択</h3></div>
+        <div id="ai-notes-tree"></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>③ 企業を選択</h3><span class="badge todo" id="ai-company-mode-badge">1社のみ</span></div>
+        <div id="ai-company-list"></div>
+      </div>
+    </div>
+
+    <button class="gen-btn" id="generate-btn">プロンプトを生成</button>
+  </section>
+
+</main>
+
+<!-- ============ 結果ポップアップ ============ -->
+<div class="modal-overlay" id="result-modal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <span>生成結果（Markdown）</span>
+      <div class="mbtns">
+        <span class="modal-msg" id="modal-copy-msg">コピーしました</span>
+        <button id="modal-copy-btn">結果をコピー</button>
+        <button class="close-btn" id="modal-close-btn">✕</button>
+      </div>
+    </div>
+    <div class="modal-body">
+      <pre id="modal-pre"></pre>
+    </div>
+  </div>
+</div>
+
+<!-- ============ カレンダーポップアップ ============ -->
+<div class="modal-overlay" id="calendar-modal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <span>スケジュールカレンダー</span>
+      <div class="mbtns">
+        <button class="close-btn" id="calendar-close-btn">✕</button>
+      </div>
+    </div>
+    <div class="modal-body">
+      <div class="cal-head-row">
+        <button class="cal-nav-btn" id="cal-prev-btn">‹</button>
+        <div class="cal-month-label" id="cal-month-label"></div>
+        <button class="cal-next-btn" id="cal-next-btn">›</button>
+      </div>
+      <div class="cal-grid" id="cal-grid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== JavaScript (Firebase + アプリ本体) ==================== -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { 
+    getAuth, 
+    GoogleAuthProvider, 
+    signInWithPopup, 
+    signOut, 
+    onAuthStateChanged 
+  } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+  import { 
+    getFirestore, 
+    doc, 
+    setDoc, 
+    onSnapshot 
+  } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+  /* ===================== Firebase初期設定 ===================== */
+  const firebaseConfig = {
+    apiKey: "AIzaSyCatQ6kM1jY9IOPDm-v28SSsDJwhp4EhtY",
+    authDomain: "aicompass-e8ff5.firebaseapp.com",
+    projectId: "aicompass-e8ff5",
+    storageBucket: "aicompass-e8ff5.firebasestorage.app",
+    messagingSenderId: "299392502567",
+    appId: "1:299392502567:web:c2075fc9b494b97ee3f702",
+    measurementId: "G-XBFYK9MRLV"
+  };
+
+  let auth = null, db = null, provider = null;
+  let currentUser = null;
+  let unsubscribeFirestore = null;
+
+  try {
+    const app = initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    db = getFirestore(app);
+    provider = new GoogleAuthProvider();
+  } catch(e) {
+    console.warn("Firebase config is not set or invalid. LocalStorage mode only.", e);
+  }
+
+  /* ===================== 都道府県 ===================== */
+  const PREFS = ["北海道","青森県","岩手県","宮城県","秋田県","山形県","福島県","茨城県","栃木県","群馬県",
+    "埼玉県","千葉県","東京都","神奈川県","新潟県","富山県","石川県","福井県","山梨県","長野県",
+    "岐阜県","静岡県","愛知県","三重県","滋賀県","京都府","大阪府","兵庫県","奈良県","和歌山県",
+    "鳥取県","島根県","岡山県","広島県","山口県","徳島県","香川県","愛媛県","高知県","福岡県",
+    "佐賀県","長崎県","熊本県","大分県","宮崎県","鹿児島県","沖縄県"];
+
+  /* ===================== state ===================== */
+  const STORAGE_KEY = "shukatsuAICompassData";
+
+  function defaultState(){
+    return {
+      notes:{
+        profile:{university:"",faculty:"",department:"",lab:"",license:"",club:"",homePref:"",homeStations:[]},
+        axis:{criteria:"",important:""},
+        selfAnalysis:{strength:"",weakness:""},
+        gakuchikaIn:[],
+        gakuchikaOut:[],
+        industries:[]
+      },
+      companies:[]
+    };
+  }
+
+  function sanitizeState(parsed){
+    const d = defaultState();
+    if(!parsed) return d;
+    const profile = Object.assign(d.notes.profile, parsed.notes && parsed.notes.profile);
+    if(!Array.isArray(profile.homeStations)) profile.homeStations = [];
+    const companies = (parsed.companies || []).map(c=>{
+      const obj = Object.assign({address:"",memo:"",testFormat:"",bizModels:[],schedules:[],branches:[],priority:""}, c);
+      if(!Array.isArray(obj.bizModels)) obj.bizModels = [];
+      if(!Array.isArray(obj.schedules)) obj.schedules = [];
+      if(!Array.isArray(obj.branches)) obj.branches = [];
+      return obj;
+    });
+    return {
+      notes:{
+        profile:profile,
+        axis:Object.assign(d.notes.axis, parsed.notes && parsed.notes.axis),
+        selfAnalysis:Object.assign(d.notes.selfAnalysis, parsed.notes && parsed.notes.selfAnalysis),
+        gakuchikaIn:(parsed.notes && parsed.notes.gakuchikaIn) || [],
+        gakuchikaOut:(parsed.notes && parsed.notes.gakuchikaOut) || [],
+        industries:(parsed.notes && parsed.notes.industries) || []
+      },
+      companies:companies
+    };
+  }
+
+  function loadState(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw) return defaultState();
+      return sanitizeState(JSON.parse(raw));
+    }catch(e){
+      return defaultState();
+    }
+  }
+
+  let state = loadState();
+  let uidCounter = 1;
+  let lastPrompt = "";
+  function uid(){ return "id" + (Date.now().toString(36)) + (uidCounter++); }
+
+  // データの永続化（ログイン時はFirestoreへ、非ログイン時はlocalStorageへ）
+  function saveState(){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    if(currentUser && db){
+      const docRef = doc(db, "users", currentUser.uid);
+      setDoc(docRef, state, { merge: true }).catch(err => {
+        console.error("Firestore同期エラー:", err);
+      });
+    }
+  }
+
+  // どのカード/リスト項目が現在編集モードかを保持
+  const editing = { profile:false, axis:false, selfAnalysis:false, gakuchikaIn:null, gakuchikaOut:null, industries:null, company:null, branchesDraft:null, scheduleCompanyId:null, scheduleId:null };
+  const companyTab = {};
+  let notesTab = "profile";
+
+  // 企業情報の絞り込み・ソート用ステート
+  const companyFilterState = { priority: "", industry: "", sort: "default" };
+
+  const aiSelection = {
+    profile:{}, axis:{}, selfAnalysis:{}, gakuchikaIn:{}, gakuchikaOut:{}, industries:{},
+    companyIds:[],
+    consultationPreset:"",
+    consultationFree:"",
+    charLimit:"400字"
+  };
+
+  /* ===================== helpers ===================== */
+  function esc(s){
+    return (s==null?"":String(s)).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  }
+  function nl2br(s){ return esc(s).replace(/\n/g,"<br>"); }
+  function hasText(v){ return v!=null && String(v).trim().length>0; }
+
+  function isProfileFilled(){
+    const p = state.notes.profile;
+    return ["university","faculty","department","lab","license","club"].some(k=>hasText(p[k])) || hasText(p.homePref) || p.homeStations.length>0;
+  }
+  function isAxisFilled(){ return Object.values(state.notes.axis).some(hasText); }
+  function isSelfFilled(){ return Object.values(state.notes.selfAnalysis).some(hasText); }
+  function anyNotesRegistered(){
+    return isProfileFilled() || isAxisFilled() || isSelfFilled() ||
+      state.notes.gakuchikaIn.length>0 || state.notes.gakuchikaOut.length>0 || state.notes.industries.length>0;
+  }
+
+  function yahooTransitUrl(fromStation, toAddress){
+    const from = encodeURIComponent(fromStation.replace(/駅$/, ""));
+    const to = encodeURIComponent(toAddress);
+    return `https://transit.yahoo.co.jp/search/result?from=${from}&to=${to}`;
+  }
+  function googleMapsTransitUrl(fromStation, toAddress){
+    const from = encodeURIComponent(fromStation);
+    const to = encodeURIComponent(toAddress);
+    return `https://www.google.com/maps/dir/?api=1&origin=${from}&destination=${to}&travelmode=transit`;
+  }
+
+  /* ===================== 認証 ＆ リアルタイム同期 ===================== */
+  const authStatusText = document.getElementById("auth-status-text");
+  const authMainBtn = document.getElementById("auth-main-btn");
+  const storageFootText = document.getElementById("storage-foot-text");
+
+  function updateAuthUI(user){
+    if(user){
+      const name = user.displayName || user.email.split("@")[0];
+      authStatusText.innerHTML = `<span style="color:var(--gold-soft); font-weight:700;">● 同期中</span><br>${esc(name)}`;
+      authMainBtn.textContent = "ログアウト";
+      authMainBtn.classList.add("logout");
+      storageFootText.textContent = "クラウド同期が有効です（PC・スマホで共有中）。";
+    }else{
+      authStatusText.textContent = "未ログイン（端末保存）";
+      authMainBtn.textContent = "Googleでログイン";
+      authMainBtn.classList.remove("logout");
+      storageFootText.textContent = "データはこの端末（localStorage）に保存されています。";
+    }
+  }
+
+  if(auth){
+    onAuthStateChanged(auth, (user) => {
+      currentUser = user;
+      updateAuthUI(user);
+
+      if(user){
+        const docRef = doc(db, "users", user.uid);
+        unsubscribeFirestore = onSnapshot(docRef, (docSnap) => {
+          if(docSnap.exists()){
+            state = sanitizeState(docSnap.data());
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+            renderCurrentPage();
+          } else {
+            setDoc(docRef, state);
+          }
+        });
+      } else {
+        if(unsubscribeFirestore) unsubscribeFirestore();
+        state = loadState();
+        renderCurrentPage();
+      }
+    });
+
+    authMainBtn.addEventListener("click", () => {
+      if(currentUser){
+        signOut(auth);
+      } else {
+        signInWithPopup(auth, provider).catch(err => {
+          console.error("ログインエラー:", err);
+          alert("ログインに失敗しました: " + err.message);
+        });
+      }
+    });
+  } else {
+    authMainBtn.addEventListener("click", () => {
+      alert("Firebaseの設定が完了していません。HTMLコード内の firebaseConfig を設定してください。");
+    });
+  }
+
+  function renderCurrentPage(){
+    const activePage = document.querySelector(".nav-btn.active")?.dataset.page || "home";
+    if(activePage==="home") renderHome();
+    if(activePage==="notes") renderNotes();
+    if(activePage==="companies") renderCompanies();
+    if(activePage==="ai") renderAI();
+  }
+
+  /* ===================== ナビゲーション ===================== */
+  document.querySelectorAll(".nav-btn").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("active"));
+      btn.classList.add("active");
+      document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+      document.getElementById("page-"+btn.dataset.page).classList.add("active");
+      renderCurrentPage();
+      closeMobileNav();
+    });
+  });
+
+  function openMobileNav(){
+    document.getElementById("main-nav").classList.add("nav-open");
+    document.getElementById("nav-overlay").classList.add("show");
+  }
+  function closeMobileNav(){
+    document.getElementById("main-nav").classList.remove("nav-open");
+    document.getElementById("nav-overlay").classList.remove("show");
+  }
+  const mobileMenuBtn = document.getElementById("mobile-menu-btn");
+  if(mobileMenuBtn) mobileMenuBtn.addEventListener("click", openMobileNav);
+  const navOverlay = document.getElementById("nav-overlay");
+  if(navOverlay) navOverlay.addEventListener("click", closeMobileNav);
+
+  /* ===================== スケジュール ===================== */
+  function scheduleTypeLabel(item){
+    return item.type==="その他" ? (item.typeCustom||"その他") : (item.type||"未設定");
+  }
+  function parseDateLocal(s){
+    if(!hasText(s)) return null;
+    const parts = s.split("-").map(Number);
+    if(parts.length!==3 || parts.some(isNaN)) return null;
+    return new Date(parts[0], parts[1]-1, parts[2]);
+  }
+  function formatMonthDay(d){
+    return (d.getMonth()+1)+"/"+d.getDate();
+  }
+  function renderHomeSchedule(){
+    const wrap = document.getElementById("home-schedule-list");
+    const today = new Date(); today.setHours(0,0,0,0);
+    const events = getAllScheduleEvents();
+    const eventsByDate = {};
+    events.forEach(ev=>{
+      const key = ev.date.getFullYear()+"-"+ev.date.getMonth()+"-"+ev.date.getDate();
+      (eventsByDate[key] = eventsByDate[key] || []).push(ev);
+    });
+    Object.keys(eventsByDate).forEach(k=>{
+      eventsByDate[k].sort((a,b)=>{
+        if(hasText(a.time) && hasText(b.time)) return a.time<b.time?-1:a.time>b.time?1:0;
+        if(hasText(a.time)) return -1;
+        if(hasText(b.time)) return 1;
+        return 0;
+      });
+    });
+    const dow = ["日","月","火","水","木","金","土"];
+    let html = '<div class="home-week-grid">';
+    for(let i=0;i<7;i++){
+      const d = new Date(today.getFullYear(), today.getMonth(), today.getDate()+i);
+      const key = d.getFullYear()+"-"+d.getMonth()+"-"+d.getDate();
+      const evs = eventsByDate[key] || [];
+      html += `<div class="home-week-cell ${i===0?'today':''}">
+        <div class="home-week-head"><span class="hw-dow">${esc(dow[d.getDay()])}</span><span class="hw-date">${d.getMonth()+1}/${d.getDate()}</span></div>
+        <div class="home-week-events">${evs.length? evs.map(ev=>`<div class="home-week-event" title="${esc(ev.companyName+' '+ev.type+(hasText(ev.memo)?'（'+ev.memo+'）':''))}">${hasText(ev.time)?`<span class="hwe-time">${esc(ev.time)}</span>`:''}<span class="hwe-name">${esc(ev.companyName)}</span><span class="hwe-type">${esc(ev.type)}</span></div>`).join("") : '<div class="home-week-empty">-</div>'}</div>
+      </div>`;
+    }
+    html += '</div>';
+    wrap.innerHTML = html;
+  }
+
+  /* ===================== カレンダーモーダル ===================== */
+  const calState = { year: new Date().getFullYear(), month: new Date().getMonth() };
+
+  function getAllScheduleEvents(){
+    const results = [];
+    state.companies.forEach(c=>{
+      (c.schedules||[]).forEach(s=>{
+        const d = parseDateLocal(s.date);
+        if(!d) return;
+        results.push({companyName: hasText(c.name)?c.name:"（企業名未入力）", type: scheduleTypeLabel(s), date:d, time:s.time, memo:s.memo});
+      });
+    });
+    return results;
+  }
+
+  function renderCalendarModal(){
+    const y = calState.year, m = calState.month;
+    document.getElementById("cal-month-label").textContent = `${y}年${m+1}月`;
+
+    const firstOfMonth = new Date(y, m, 1);
+    const startOffset = firstOfMonth.getDay();
+    const gridStart = new Date(y, m, 1 - startOffset);
+    const today = new Date(); today.setHours(0,0,0,0);
+
+    const events = getAllScheduleEvents();
+    const eventsByDate = {};
+    events.forEach(ev=>{
+      const key = ev.date.getFullYear()+"-"+(ev.date.getMonth())+"-"+ev.date.getDate();
+      (eventsByDate[key] = eventsByDate[key] || []).push(ev);
+    });
+    Object.keys(eventsByDate).forEach(k=>{
+      eventsByDate[k].sort((a,b)=>{
+        if(hasText(a.time) && hasText(b.time)) return a.time<b.time?-1:a.time>b.time?1:0;
+        if(hasText(a.time)) return -1;
+        if(hasText(b.time)) return 1;
+        return 0;
+      });
+    });
+
+    const dow = ["日","月","火","水","木","金","土"];
+    let html = dow.map(d=>`<div class="cal-dow">${d}</div>`).join("");
+
+    for(let i=0;i<42;i++){
+      const cellDate = new Date(gridStart.getFullYear(), gridStart.getMonth(), gridStart.getDate()+i);
+      const key = cellDate.getFullYear()+"-"+cellDate.getMonth()+"-"+cellDate.getDate();
+      const isOtherMonth = cellDate.getMonth()!==m;
+      const isToday = cellDate.getTime()===today.getTime();
+      const evs = eventsByDate[key] || [];
+      html += `<div class="cal-cell ${isOtherMonth?'other-month':''} ${isToday?'today':''}">
+        <div class="cal-daynum">${cellDate.getDate()}</div>
+        ${evs.map(ev=>`<div class="cal-event" title="${esc(ev.companyName+' '+ev.type+(hasText(ev.memo)?'（'+ev.memo+'）':''))}">${hasText(ev.time)?`<span class="cal-event-time">${esc(ev.time)}</span>`:''}${esc(ev.companyName)} ${esc(ev.type)}</div>`).join("")}
+      </div>`;
+    }
+
+    document.getElementById("cal-grid").innerHTML = html;
+  }
+
+  document.getElementById("schedule-more-btn").addEventListener("click", ()=>{
+    const now = new Date();
+    calState.year = now.getFullYear();
+    calState.month = now.getMonth();
+    renderCalendarModal();
+    document.getElementById("calendar-modal").classList.add("show");
+  });
+  document.getElementById("calendar-close-btn").addEventListener("click", ()=>{
+    document.getElementById("calendar-modal").classList.remove("show");
+  });
+  document.getElementById("calendar-modal").addEventListener("click", (e)=>{
+    if(e.target.id==="calendar-modal") document.getElementById("calendar-modal").classList.remove("show");
+  });
+  document.getElementById("cal-prev-btn").addEventListener("click", ()=>{
+    calState.month -= 1;
+    if(calState.month<0){ calState.month = 11; calState.year -= 1; }
+    renderCalendarModal();
+  });
+  document.getElementById("cal-next-btn").addEventListener("click", ()=>{
+    calState.month += 1;
+    if(calState.month>11){ calState.month = 0; calState.year += 1; }
+    renderCalendarModal();
+  });
+
+  /* ===================== ホーム ===================== */
+  function renderHome(){
+    renderHomeSchedule();
+    const items = [
+      {label:"プロフィール情報", done:isProfileFilled()},
+      {label:"就活の軸", done:isAxisFilled()},
+      {label:"自己分析", done:isSelfFilled()},
+      {label:"ガクチカ（学内）", done:state.notes.gakuchikaIn.length>0},
+      {label:"ガクチカ（学外）", done:state.notes.gakuchikaOut.length>0},
+      {label:"志望業種/職種", done:state.notes.industries.length>0}
+    ];
+    const doneCount = items.filter(i=>i.done).length;
+    const pct = Math.round(doneCount/items.length*100);
+
+    document.getElementById("home-checklist").innerHTML = items.map(i=>`
+      <li><span class="check-mark ${i.done?'on':'off'}">${i.done?'✓':''}</span>${esc(i.label)}</li>
+    `).join("");
+
+    const circumference = 194.7;
+    const offset = circumference - (circumference*pct/100);
+    document.getElementById("ring-fg").style.strokeDashoffset = offset;
+    document.getElementById("ring-label").textContent = pct+"%";
+    document.getElementById("home-company-count").textContent = state.companies.length;
+
+    document.getElementById("complete-banner-wrap").innerHTML = pct===100
+      ? `<div class="complete-banner">登録お疲れさまでした！</div>` : "";
+  }
+
+  /* ===================== 就活メモ ===================== */
+  const NOTES_TABS = [
+    {key:"profile", label:"プロフィール", done:()=>isProfileFilled()},
+    {key:"axis", label:"就活の軸", done:()=>isAxisFilled()},
+    {key:"selfAnalysis", label:"自己分析", done:()=>isSelfFilled()},
+    {key:"gakuchikaIn", label:"ガクチカ（学内）", done:()=>state.notes.gakuchikaIn.length>0},
+    {key:"gakuchikaOut", label:"ガクチカ（学外）", done:()=>state.notes.gakuchikaOut.length>0},
+    {key:"industries", label:"志望業種/職種", done:()=>state.notes.industries.length>0}
+  ];
+
+  function renderNotesTabs(){
+    const wrap = document.getElementById("notes-tabs");
+    wrap.innerHTML = NOTES_TABS.map(t=>`
+      <button class="tab-btn ${notesTab===t.key?'active':''}" data-tab="${t.key}">
+        <span class="tbadge ${t.done()?'on':''}"></span>${esc(t.label)}
+      </button>`).join("");
+    wrap.querySelectorAll("[data-tab]").forEach(b=>{
+      b.addEventListener("click", ()=>{ notesTab=b.dataset.tab; renderNotes(); });
+    });
+  }
+
+  function renderNotes(){
+    renderNotesTabs();
+    const c = document.getElementById("notes-container");
+    if(notesTab==="profile"){
+      c.innerHTML = renderProfileCard();
+      bindProfileCardEvents();
+    }else if(notesTab==="axis"){
+      c.innerHTML = renderFieldCard("axis","就活の軸",[
+        {key:"criteria",label:"企業選びの基準", placeholder:"例）成長環境があるか、裁量権の大きさ"},
+        {key:"important",label:"働く上で大切にしたいこと", placeholder:"例）チームで成果を出すこと、learn & grow"}
+      ]);
+      bindFieldCardEvents("axis");
+    }else if(notesTab==="selfAnalysis"){
+      c.innerHTML = renderFieldCard("selfAnalysis","自己分析",[
+        {key:"strength",label:"長所"},{key:"weakness",label:"短所"}
+      ]);
+      bindFieldCardEvents("selfAnalysis");
+    }else if(notesTab==="gakuchikaIn"){
+      c.innerHTML = renderListCard("gakuchikaIn","ガクチカ（学内）", state.notes.gakuchikaIn);
+      bindListCardEvents("gakuchikaIn");
+    }else if(notesTab==="gakuchikaOut"){
+      c.innerHTML = renderListCard("gakuchikaOut","ガクチカ（学外）", state.notes.gakuchikaOut);
+      bindListCardEvents("gakuchikaOut");
+    }else if(notesTab==="industries"){
+      c.innerHTML = renderIndustryCard();
+      bindIndustryEvents();
+    }
+  }
+
+  function renderProfileCard(){
+    const p = state.notes.profile;
+    const isEditing = editing.profile;
+    const fields = [
+      {key:"university",label:"大学名"},{key:"faculty",label:"学部"},{key:"department",label:"学科"},
+      {key:"lab",label:"所属研究室"},{key:"license",label:"資格"},{key:"club",label:"所属サークル"}
+    ];
+    let body;
+    if(isEditing){
+      body = `<div class="field-row">` + fields.map(f=>`
+        <div class="field">
+          <label>${esc(f.label)}</label>
+          <textarea data-fkey="${f.key}" rows="2">${esc(p[f.key])}</textarea>
+        </div>`).join("") + `</div>
+        <div class="field-row">
+          <div class="field">
+            <label>最寄り 都道府県</label>
+            <select data-fkey="homePref">
+              <option value="">選択してください</option>
+              ${PREFS.map(pr=>`<option value="${esc(pr)}" ${p.homePref===pr?'selected':''}>${esc(pr)}</option>`).join("")}
+            </select>
+          </div>
+          <div class="field">
+            <label>最寄り駅（複数登録可）</label>
+            <div class="chip-list" id="profile-station-chips">${p.homeStations.map((s,i)=>`
+              <span class="chip">${esc(s)}<button type="button" data-rm-station="${i}">✕</button></span>`).join("")}</div>
+            <div class="station-add-row">
+              <input type="text" id="profile-station-input" placeholder="例）渋谷駅">
+              <button type="button" class="icon-btn" id="profile-station-add">追加</button>
+            </div>
+          </div>
+        </div>
+        <div class="save-row">
+          <button class="icon-btn gold" data-act="save">保存</button>
+          <button class="icon-btn" data-act="cancel">キャンセル</button>
+        </div>`;
+    }else{
+      body = `<div class="view-grid">` + fields.map(f=>`
+        <div>
+          <div class="view-label">${esc(f.label)}</div>
+          <div class="view-value ${hasText(p[f.key])?'':'empty'}">${hasText(p[f.key]) ? nl2br(p[f.key]) : '未入力'}</div>
+        </div>`).join("") + `
+        <div>
+          <div class="view-label">最寄り 都道府県</div>
+          <div class="view-value ${hasText(p.homePref)?'':'empty'}">${hasText(p.homePref)?esc(p.homePref):'未入力'}</div>
+        </div>
+        <div>
+          <div class="view-label">最寄り駅</div>
+          <div class="view-value ${p.homeStations.length?'':'empty'}">${p.homeStations.length?esc(p.homeStations.join("、")):'未入力'}</div>
+        </div>
+      </div>`;
+    }
+    const filled = isProfileFilled();
+    return `
+      <div class="card" data-cardkey="profile">
+        <div class="card-head">
+          <h3>プロフィール情報</h3>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span class="badge ${filled?'done':'todo'}">${filled?'登録済み':'未登録'}</span>
+            ${isEditing ? '' : '<button class="icon-btn" data-act="edit">編集</button>'}
+          </div>
+        </div>
+        ${body}
+      </div>`;
+  }
+
+  function bindProfileCardEvents(){
+    const card = document.querySelector('.card[data-cardkey="profile"]');
+    const editBtn = card.querySelector('[data-act="edit"]');
+    if(editBtn) editBtn.addEventListener("click", ()=>{ editing.profile=true; renderNotes(); });
+    const cancelBtn = card.querySelector('[data-act="cancel"]');
+    if(cancelBtn) cancelBtn.addEventListener("click", ()=>{ editing.profile=false; renderNotes(); });
+
+    function refreshProfileStationChips(){
+      const chipWrap = card.querySelector('#profile-station-chips');
+      if(!chipWrap) return;
+      chipWrap.innerHTML = state.notes.profile.homeStations.map((s,i)=>`
+        <span class="chip">${esc(s)}<button type="button" data-rm-station="${i}">✕</button></span>`).join("");
+      chipWrap.querySelectorAll('[data-rm-station]').forEach(btn=>{
+        btn.addEventListener("click", ()=>{
+          state.notes.profile.homeStations.splice(Number(btn.dataset.rmStation),1);
+          saveState();
+          refreshProfileStationChips();
+        });
+      });
+    }
+    const addBtn = card.querySelector('#profile-station-add');
+    if(addBtn){
+      const doAdd = ()=>{
+        const input = card.querySelector('#profile-station-input');
+        const v = input.value.trim();
+        if(v){
+          state.notes.profile.homeStations.push(v);
+          saveState();
+          input.value = "";
+          refreshProfileStationChips();
+        }
+      };
+      addBtn.addEventListener("click", doAdd);
+      card.querySelector('#profile-station-input').addEventListener("keydown", e=>{ if(e.key==="Enter"){ e.preventDefault(); doAdd(); } });
+    }
+    refreshProfileStationChips();
+
+    const saveBtn = card.querySelector('[data-act="save"]');
+    if(saveBtn) saveBtn.addEventListener("click", ()=>{
+      card.querySelectorAll("[data-fkey]").forEach(el=>{
+        state.notes.profile[el.dataset.fkey] = el.value;
+      });
+      saveState();
+      editing.profile=false;
+      renderNotes();
+    });
+  }
+
+  function renderFieldCard(key, title, fields){
+    const obj = state.notes[key];
+    const isEditing = editing[key];
+    let body;
+    if(isEditing){
+      body = `<div class="field-row">` + fields.map(f=>`
+        <div class="field">
+          <label>${esc(f.label)}</label>
+          <textarea data-fkey="${f.key}" rows="2" placeholder="${esc(f.placeholder||'')}">${esc(obj[f.key])}</textarea>
+        </div>`).join("") + `</div>
+        <div class="save-row">
+          <button class="icon-btn gold" data-act="save">保存</button>
+          <button class="icon-btn" data-act="cancel">キャンセル</button>
+        </div>`;
+    }else{
+      body = `<div class="view-grid">` + fields.map(f=>`
+        <div>
+          <div class="view-label">${esc(f.label)}</div>
+          <div class="view-value ${hasText(obj[f.key])?'':'empty'}">${hasText(obj[f.key]) ? nl2br(obj[f.key]) : '未入力'}</div>
+        </div>`).join("") + `</div>`;
+    }
+    const filled = fields.some(f=>hasText(obj[f.key]));
+    return `
+      <div class="card" data-cardkey="${key}">
+        <div class="card-head">
+          <h3>${esc(title)}</h3>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span class="badge ${filled?'done':'todo'}">${filled?'登録済み':'未登録'}</span>
+            ${isEditing ? '' : '<button class="icon-btn" data-act="edit">編集</button>'}
+          </div>
+        </div>
+        ${body}
+      </div>`;
+  }
+
+  function bindFieldCardEvents(key){
+    const card = document.querySelector(`.card[data-cardkey="${key}"]`);
+    const editBtn = card.querySelector('[data-act="edit"]');
+    if(editBtn) editBtn.addEventListener("click", ()=>{ editing[key]=true; renderNotes(); });
+    const cancelBtn = card.querySelector('[data-act="cancel"]');
+    if(cancelBtn) cancelBtn.addEventListener("click", ()=>{ editing[key]=false; renderNotes(); });
+    const saveBtn = card.querySelector('[data-act="save"]');
+    if(saveBtn) saveBtn.addEventListener("click", ()=>{
+      card.querySelectorAll("[data-fkey]").forEach(el=>{
+        state.notes[key][el.dataset.fkey] = el.value;
+      });
+      saveState();
+      editing[key]=false;
+      renderNotes();
+    });
+  }
+
+  function renderListCard(key, title, list){
+    const isNew = editing[key]==="new";
+    let itemsHtml = list.map(item=>{
+      const isEdit = editing[key]===item.id;
+      if(isEdit){
+        return `
+          <div class="sub-item" data-id="${item.id}">
+            <div class="field"><label>タイトル</label><input type="text" data-f="title" value="${esc(item.title)}" placeholder="例）〇〇プロジェクトでの取り組み"></div>
+            <div class="field" style="margin-bottom:0;"><label>内容</label><textarea data-f="content" rows="3" placeholder="取り組んだ内容や成果を具体的に">${esc(item.content)}</textarea></div>
+            <div class="save-row">
+              <button class="icon-btn gold" data-act="save">保存</button>
+              <button class="icon-btn" data-act="cancel">キャンセル</button>
+              <button class="icon-btn danger" data-act="delete" style="margin-left:auto;">削除</button>
+            </div>
+          </div>`;
+      }
+      return `
+        <div class="sub-item" data-id="${item.id}">
+          <div class="sub-item-head">
+            <div class="sub-item-title">${hasText(item.title)?esc(item.title):'（無題）'}</div>
+            <div class="sub-actions"><button class="icon-btn" data-act="edit">編集</button></div>
+          </div>
+          <div class="view-value ${hasText(item.content)?'':'empty'}">${hasText(item.content)?nl2br(item.content):'内容未入力'}</div>
+        </div>`;
+    }).join("");
+
+    if(isNew){
+      itemsHtml += `
+        <div class="sub-item" data-id="new">
+          <div class="field"><label>タイトル</label><input type="text" data-f="title" placeholder="例）〇〇プロジェクトでの取り組み"></div>
+          <div class="field" style="margin-bottom:0;"><label>内容</label><textarea data-f="content" rows="3" placeholder="取り組んだ内容や成果を具体的に"></textarea></div>
+          <div class="save-row">
+            <button class="icon-btn gold" data-act="save-new">保存</button>
+            <button class="icon-btn" data-act="cancel-new">キャンセル</button>
+          </div>
+        </div>`;
+    }
+
+    return `
+      <div class="card" data-cardkey="${key}">
+        <div class="card-head">
+          <h3>${esc(title)}</h3>
+          <span class="badge ${list.length>0?'done':'todo'}">${list.length>0?list.length+'件 登録済み':'未登録'}</span>
+        </div>
+        <div class="sub-list">${itemsHtml || '<div class="view-value empty">まだ登録がありません</div>'}</div>
+        ${isNew? '' : '<button class="add-btn" data-act="add">＋ 項目を追加</button>'}
+      </div>`;
+  }
+
+  function bindListCardEvents(key){
+    const card = document.querySelector(`.card[data-cardkey="${key}"]`);
+    const addBtn = card.querySelector('[data-act="add"]');
+    if(addBtn) addBtn.addEventListener("click", ()=>{ editing[key]="new"; renderNotes(); });
+
+    card.querySelectorAll(".sub-item").forEach(itemEl=>{
+      const id = itemEl.dataset.id;
+      const editBtn = itemEl.querySelector('[data-act="edit"]');
+      if(editBtn) editBtn.addEventListener("click", ()=>{ editing[key]=id; renderNotes(); });
+
+      const cancelBtn = itemEl.querySelector('[data-act="cancel"]');
+      if(cancelBtn) cancelBtn.addEventListener("click", ()=>{ editing[key]=null; renderNotes(); });
+
+      const delBtn = itemEl.querySelector('[data-act="delete"]');
+      if(delBtn) delBtn.addEventListener("click", ()=>{
+        state.notes[key] = state.notes[key].filter(x=>x.id!==id);
+        saveState(); editing[key]=null; renderNotes();
+      });
+
+      const saveBtn = itemEl.querySelector('[data-act="save"]');
+      if(saveBtn) saveBtn.addEventListener("click", ()=>{
+        const target = state.notes[key].find(x=>x.id===id);
+        target.title = itemEl.querySelector('[data-f="title"]').value;
+        target.content = itemEl.querySelector('[data-f="content"]').value;
+        saveState(); editing[key]=null; renderNotes();
+      });
+
+      const saveNewBtn = itemEl.querySelector('[data-act="save-new"]');
+      if(saveNewBtn) saveNewBtn.addEventListener("click", ()=>{
+        const title = itemEl.querySelector('[data-f="title"]').value;
+        const content = itemEl.querySelector('[data-f="content"]').value;
+        state.notes[key].push({id:uid(), title, content});
+        saveState(); editing[key]=null; renderNotes();
+      });
+
+      const cancelNewBtn = itemEl.querySelector('[data-act="cancel-new"]');
+      if(cancelNewBtn) cancelNewBtn.addEventListener("click", ()=>{ editing[key]=null; renderNotes(); });
+    });
+  }
+
+  const INDUSTRY_OPTIONS = ["IT・Web","メーカー","商社","金融","コンサルティング","広告・マスコミ","小売・流通","不動産","医療・福祉","教育","公務員","運輸・物流","建設","旅行・レジャー","サービス","その他"];
+
+  function renderIndustrySelect(currentValue){
+    const isKnown = INDUSTRY_OPTIONS.slice(0,-1).includes(currentValue);
+    const isOther = hasText(currentValue) && !isKnown;
+    return `
+      <select data-f="industrySelect">
+        <option value="">選択してください</option>
+        ${INDUSTRY_OPTIONS.map(o=>`<option value="${esc(o)}" ${(isOther? o==='その他' : o===currentValue)?'selected':''}>${esc(o)}</option>`).join("")}
+      </select>
+      <input type="text" data-f="industryCustom" value="${esc(isOther?currentValue:'')}" placeholder="業種を入力してください" style="margin-top:8px; ${isOther?'':'display:none;'}">`;
+  }
+
+  function industryItemTitle(item){
+    return [item.industry, item.jobType].filter(hasText).join(" / ") || "（無題）";
+  }
+
+  function renderIndustryCard(){
+    const key="industries";
+    const list = state.notes.industries;
+    const isNew = editing[key]==="new";
+    let itemsHtml = list.map(item=>{
+      const isEdit = editing[key]===item.id;
+      if(isEdit){
+        return `
+          <div class="sub-item" data-id="${item.id}">
+            <div class="field"><label>志望業種</label>${renderIndustrySelect(item.industry)}</div>
+            <div class="field"><label>志望職種</label><input type="text" data-f="jobType" value="${esc(item.jobType)}" placeholder="例）法人営業、Webエンジニア"></div>
+            <div class="field" style="margin-bottom:0;"><label>志望理由</label><textarea data-f="reason" rows="3" placeholder="なぜその業種・職種を志望するのか">${esc(item.reason)}</textarea></div>
+            <div class="save-row">
+              <button class="icon-btn gold" data-act="save">保存</button>
+              <button class="icon-btn" data-act="cancel">キャンセル</button>
+              <button class="icon-btn danger" data-act="delete" style="margin-left:auto;">削除</button>
+            </div>
+          </div>`;
+      }
+      return `
+        <div class="sub-item" data-id="${item.id}">
+          <div class="sub-item-head">
+            <div class="sub-item-title">${esc(industryItemTitle(item))}</div>
+            <div class="sub-actions"><button class="icon-btn" data-act="edit">編集</button></div>
+          </div>
+          <div class="view-value ${hasText(item.reason)?'':'empty'}">${hasText(item.reason)?nl2br(item.reason):'理由未入力'}</div>
+        </div>`;
+    }).join("");
+
+    if(isNew){
+      itemsHtml += `
+        <div class="sub-item" data-id="new">
+          <div class="field"><label>志望業種</label>${renderIndustrySelect("")}</div>
+          <div class="field"><label>志望職種</label><input type="text" data-f="jobType" value="" placeholder="例）法人営業、Webエンジニア"></div>
+          <div class="field" style="margin-bottom:0;"><label>志望理由</label><textarea data-f="reason" rows="3" placeholder="なぜその業種・職種を志望するのか"></textarea></div>
+          <div class="save-row">
+            <button class="icon-btn gold" data-act="save-new">保存</button>
+            <button class="icon-btn" data-act="cancel-new">キャンセル</button>
+          </div>
+        </div>`;
+    }
+
+    return `
+      <div class="card" data-cardkey="industries">
+        <div class="card-head">
+          <h3>志望業種/職種</h3>
+          <span class="badge ${list.length>0?'done':'todo'}">${list.length>0?list.length+'件 登録済み':'未登録'}</span>
+        </div>
+        <div class="sub-list">${itemsHtml || '<div class="view-value empty">まだ登録がありません</div>'}</div>
+        ${isNew? '' : '<button class="add-btn" data-act="add">＋ 業種/職種を追加</button>'}
+      </div>`;
+  }
+  function bindIndustryEvents(){
+    const key="industries";
+    const card = document.querySelector(`.card[data-cardkey="industries"]`);
+    const addBtn = card.querySelector('[data-act="add"]');
+    if(addBtn) addBtn.addEventListener("click", ()=>{ editing[key]="new"; renderNotes(); });
+
+    card.querySelectorAll(".sub-item").forEach(itemEl=>{
+      const id = itemEl.dataset.id;
+      const editBtn = itemEl.querySelector('[data-act="edit"]');
+      if(editBtn) editBtn.addEventListener("click", ()=>{ editing[key]=id; renderNotes(); });
+      const cancelBtn = itemEl.querySelector('[data-act="cancel"]');
+      if(cancelBtn) cancelBtn.addEventListener("click", ()=>{ editing[key]=null; renderNotes(); });
+      const delBtn = itemEl.querySelector('[data-act="delete"]');
+      if(delBtn) delBtn.addEventListener("click", ()=>{
+        state.notes.industries = state.notes.industries.filter(x=>x.id!==id);
+        saveState(); editing[key]=null; renderNotes();
+      });
+
+      const industrySelect = itemEl.querySelector('[data-f="industrySelect"]');
+      const industryCustom = itemEl.querySelector('[data-f="industryCustom"]');
+      if(industrySelect){
+        industrySelect.addEventListener("change", ()=>{
+          industryCustom.style.display = industrySelect.value==="その他" ? "" : "none";
+        });
+      }
+      function readIndustryValue(){
+        if(!industrySelect) return "";
+        return industrySelect.value==="その他" ? industryCustom.value.trim() : industrySelect.value;
+      }
+
+      const saveBtn = itemEl.querySelector('[data-act="save"]');
+      if(saveBtn) saveBtn.addEventListener("click", ()=>{
+        const target = state.notes.industries.find(x=>x.id===id);
+        target.industry = readIndustryValue();
+        target.jobType = itemEl.querySelector('[data-f="jobType"]').value;
+        target.reason = itemEl.querySelector('[data-f="reason"]').value;
+        saveState(); editing[key]=null; renderNotes();
+      });
+      const saveNewBtn = itemEl.querySelector('[data-act="save-new"]');
+      if(saveNewBtn) saveNewBtn.addEventListener("click", ()=>{
+        const industry = readIndustryValue();
+        const jobType = itemEl.querySelector('[data-f="jobType"]').value;
+        const reason = itemEl.querySelector('[data-f="reason"]').value;
+        state.notes.industries.push({id:uid(), industry, jobType, reason});
+        saveState(); editing[key]=null; renderNotes();
+      });
+      const cancelNewBtn = itemEl.querySelector('[data-act="cancel-new"]');
+      if(cancelNewBtn) cancelNewBtn.addEventListener("click", ()=>{ editing[key]=null; renderNotes(); });
+    });
+  }
+
+  /* ===================== 企業情報 ページ ===================== */
+  const COMPANY_FIELDS = [
+    {key:"business", label:"事業・仕事内容"},
+    {key:"mvv", label:"企業理念・MVV"},
+    {key:"personality", label:"求める人物像"},
+    {key:"strength", label:"企業の特徴・強み"},
+    {key:"selection", label:"選考情報"},
+    {key:"myView", label:"自分から見た企業"},
+    {key:"memo", label:"メモ"}
+  ];
+
+  const BIZ_MODEL_OPTIONS = ["BtoB","BtoC","BtoBtoC","BtoG"];
+  const SCHEDULE_TYPES = ["ES提出締切","適性検査・Webテスト受検期限","一次面接","二次面接","三次面接","最終面接","内定","不採用連絡","その他"];
+
+  function renderCompanies(){
+    const c = document.getElementById("companies-container");
+    
+    // 業界絞り込みセレクトボックスの動的生成
+    const industrySelectEl = document.getElementById("company-filter-industry");
+    if(industrySelectEl){
+      const currentSelectedIndustry = industrySelectEl.value;
+      const allIndustries = Array.from(new Set(state.companies.map(co => co.industry).filter(hasText))).sort();
+      industrySelectEl.innerHTML = `<option value="">すべての業界</option>` + allIndustries.map(ind => `
+        <option value="${esc(ind)}" ${ind === currentSelectedIndustry ? 'selected' : ''}>${esc(ind)}</option>
+      `).join("");
+      industrySelectEl.value = companyFilterState.industry;
+    }
+
+    document.getElementById("company-filter-priority").value = companyFilterState.priority;
+    document.getElementById("company-sort").value = companyFilterState.sort;
+
+    // フィルタリング
+    let filtered = state.companies.filter(co => {
+      if(companyFilterState.priority){
+        if(companyFilterState.priority === "未設定"){
+          if(hasText(co.priority)) return false;
+        } else {
+          if(co.priority !== companyFilterState.priority) return false;
+        }
+      }
+      if(companyFilterState.industry){
+        if(co.industry !== companyFilterState.industry) return false;
+      }
+      return true;
+    });
+
+    // ソート
+    if(companyFilterState.sort === "priority"){
+      const order = {"高":1, "中":2, "低":3, "":4};
+      filtered.sort((a, b) => {
+        const pa = order[a.priority || ""] || 4;
+        const pb = order[b.priority || ""] || 4;
+        return pa - pb;
+      });
+    } else if(companyFilterState.sort === "name"){
+      filtered.sort((a, b) => (a.name || "").localeCompare(b.name || "", "ja"));
+    }
+
+    if(state.companies.length===0 && editing.company!=="new"){
+      c.innerHTML = `<div class="empty-state"><div class="glyph">🏢</div><p>まだ企業情報が登録されていません。<br>下の「＋ 企業を追加」から登録しましょう。</p></div>`;
+    }else if(filtered.length===0 && editing.company!=="new"){
+      c.innerHTML = `<div class="empty-state"><div class="glyph">🔍</div><p>条件に一致する企業が見つかりませんでした。</p></div>`;
+    }else{
+      c.innerHTML = filtered.map(renderCompanyCard).join("");
+    }
+    if(editing.company==="new"){
+      c.innerHTML += renderCompanyCard(null);
+    }
+    bindCompanyEvents();
+  }
+
+  // フィルタ・ソートのイベントリスナー設定
+  document.getElementById("company-filter-priority").addEventListener("change", (e)=>{
+    companyFilterState.priority = e.target.value;
+    renderCompanies();
+  });
+  document.getElementById("company-filter-industry").addEventListener("change", (e)=>{
+    companyFilterState.industry = e.target.value;
+    renderCompanies();
+  });
+  document.getElementById("company-sort").addEventListener("change", (e)=>{
+    companyFilterState.sort = e.target.value;
+    renderCompanies();
+  });
+
+  function renderScheduleTypeSelect(currentValue){
+    const isKnown = SCHEDULE_TYPES.slice(0,-1).includes(currentValue);
+    const isOther = hasText(currentValue) && !isKnown;
+    return `
+      <select data-f="scheduleType">
+        <option value="">選択してください</option>
+        ${SCHEDULE_TYPES.map(o=>`<option value="${esc(o)}" ${(isOther? o==='その他' : o===currentValue)?'selected':''}>${esc(o)}</option>`).join("")}
+      </select>
+      <input type="text" data-f="scheduleTypeCustom" value="${esc(isOther?currentValue:'')}" placeholder="項目名を入力してください" style="margin-top:8px; ${isOther?'':'display:none;'}">`;
+  }
+
+  function renderScheduleTab(company){
+    const list = (company.schedules||[]).slice().sort((a,b)=>{
+      const da = parseDateLocal(a.date), db = parseDateLocal(b.date);
+      if(!da && !db) return 0;
+      if(!da) return 1;
+      if(!db) return -1;
+      return da-db;
+    });
+    const isNewItem = editing.scheduleCompanyId===company.id && editing.scheduleId==="new";
+
+    let itemsHtml = list.map(item=>{
+      const isEdit = editing.scheduleCompanyId===company.id && editing.scheduleId===item.id;
+      if(isEdit){
+        return `
+          <div class="sub-item" data-sid="${item.id}">
+            <div class="field"><label>項目</label>${renderScheduleTypeSelect(item.type)}</div>
+            <div class="field-row">
+              <div class="field"><label>日付</label><input type="date" data-f="scheduleDate" value="${esc(item.date||'')}"></div>
+              <div class="field"><label>時間</label><input type="time" data-f="scheduleTime" value="${esc(item.time||'')}"></div>
+            </div>
+            <div class="field" style="margin-bottom:0;"><label>メモ</label><textarea data-f="scheduleMemo" rows="2" placeholder="会場・持ち物・注意点など">${esc(item.memo||'')}</textarea></div>
+            <div class="save-row">
+              <button class="icon-btn gold" data-act="schedule-save">保存</button>
+              <button class="icon-btn" data-act="schedule-cancel">キャンセル</button>
+              <button class="icon-btn danger" data-act="schedule-delete" style="margin-left:auto;">削除</button>
+            </div>
+          </div>`;
+      }
+      const d = parseDateLocal(item.date);
+      return `
+        <div class="schedule-item" data-sid="${item.id}">
+          <div class="schedule-date-badge">
+            ${d? `<div class="md">${esc(formatMonthDay(d))}</div><div class="y">${esc(d.getFullYear())}</div>` : `<div class="schedule-nodate">日付未定</div>`}
+          </div>
+          <div class="schedule-body">
+            <div class="schedule-type">${hasText(item.time)?esc(item.time)+' ・ ':''}${esc(scheduleTypeLabel(item))}</div>
+            ${hasText(item.memo)? `<div class="schedule-memo">${nl2br(item.memo)}</div>` : ''}
+          </div>
+          <div class="schedule-actions"><button class="icon-btn" data-act="schedule-edit">編集</button></div>
+        </div>`;
+    }).join("");
+
+    if(isNewItem){
+      itemsHtml += `
+        <div class="sub-item" data-sid="new">
+          <div class="field"><label>項目</label>${renderScheduleTypeSelect("")}</div>
+          <div class="field-row">
+            <div class="field"><label>日付</label><input type="date" data-f="scheduleDate" value=""></div>
+            <div class="field"><label>時間</label><input type="time" data-f="scheduleTime" value=""></div>
+          </div>
+          <div class="field" style="margin-bottom:0;"><label>メモ</label><textarea data-f="scheduleMemo" rows="2" placeholder="会場・持ち物・注意点など"></textarea></div>
+          <div class="save-row">
+            <button class="icon-btn gold" data-act="schedule-save-new">保存</button>
+            <button class="icon-btn" data-act="schedule-cancel-new">キャンセル</button>
+          </div>
+        </div>`;
+    }
+
+    return `
+      <div>${itemsHtml || '<div class="view-value empty">まだスケジュールが登録されていません</div>'}</div>
+      ${isNewItem? '' : '<button class="add-btn" data-act="schedule-add">＋ スケジュールを追加</button>'}
+    `;
+  }
+
+  function commuteHtmlFor(data){
+    const home = state.notes.profile;
+    if(home.homeStations.length===0 || !hasText(data.address)){
+      return `<div class="commute-box"><div class="ctitle">🚃 公共交通機関利用時の所要時間 目安</div><div class="commute-empty">自分の最寄り駅・企業の住所の両方を登録すると表示されます。</div></div>`;
+    }
+    let rows = "";
+    home.homeStations.forEach(hs=>{
+      const yUrl = esc(yahooTransitUrl(hs, data.address));
+      const gUrl = esc(googleMapsTransitUrl(hs, data.address));
+      rows += `<div class="commute-row"><span>${esc(hs)} → ${esc(data.address)}（公共交通機関）</span>
+        <span class="commute-links">
+          <a class="commute-link-btn" href="${yUrl}" target="_blank" rel="noopener noreferrer">Yahoo!路線情報で見る</a>
+          <a class="commute-link-btn" href="${gUrl}" target="_blank" rel="noopener noreferrer">Googleマップで見る</a>
+        </span></div>`;
+    });
+    return `<div class="commute-box"><div class="ctitle">🚃 公共交通機関での所要時間を調べる</div>${rows}<div class="commute-note">自宅最寄り駅から企業住所までの所要時間です（自宅⇔駅の徒歩時間は含みません）。乗換時間を含む実際の所要時間はリンク先でご確認ください。</div></div>`;
+  }
+
+  function renderCompanyCard(item){
+    const isNew = item===null;
+    const id = isNew ? "new" : item.id;
+    const isEdit = isNew || editing.company===item.id;
+    const data = isNew ? {name:"",industry:"",url:"",address:"",branches:[],priority:"",testFormat:"",bizModels:[],schedules:[],business:"",mvv:"",personality:"",strength:"",selection:"",myView:"",memo:""} : item;
+
+    if(isEdit){
+      const err = editing.companyError ? `<div class="form-error show">${esc(editing.companyError)}</div>` : "";
+      const branchesDraft = editing.branchesDraft || [];
+      const branchRowsHtml = branchesDraft.map((b,idx)=>`
+        <div class="branch-row" data-branch-idx="${idx}">
+          <input type="text" class="branch-label-input" data-bf="label" value="${esc(b.label)}" placeholder="例）大阪支社">
+          <input type="text" data-bf="address" value="${esc(b.address)}" placeholder="支社の住所">
+          <button type="button" class="branch-remove-btn" data-act="branch-remove" data-idx="${idx}">✕</button>
+        </div>`).join("");
+      return `
+        <div class="card" data-id="${id}">
+          <div class="card-head"><h3>${isNew?'新しい企業を追加':'企業情報を編集'}</h3></div>
+          ${err}
+          <div class="field-row">
+            <div class="field"><label>企業名 <span style="color:var(--danger)">必須</span></label><input type="text" data-f="name" value="${esc(data.name)}" placeholder="例）株式会社サンプル"></div>
+            <div class="field"><label>企業URL</label><input type="url" data-f="url" value="${esc(data.url)}" placeholder="https://example.com"></div>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label>業界</label>
+              ${renderIndustrySelect(data.industry)}
+            </div>
+            <div class="field">
+              <label>志望度</label>
+              <select data-f="priority">
+                <option value="" ${!hasText(data.priority)?'selected':''}>未設定</option>
+                <option value="高" ${data.priority==='高'?'selected':''}>高</option>
+                <option value="中" ${data.priority==='中'?'selected':''}>中</option>
+                <option value="低" ${data.priority==='低'?'selected':''}>低</option>
+              </select>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field" style="flex-basis:100%;">
+              <label>企業の住所（本社）</label>
+              <input type="text" data-f="address" value="${esc(data.address)}" placeholder="例）東京都渋谷区渋谷2-24-12">
+              <div class="hint">自宅の最寄り駅からこの住所までの所要時間（経路検索リンク）が表示されます。</div>
+            </div>
+          </div>
+          <div class="field" style="flex-basis:100%;">
+            <label>支社の住所（複数登録可）</label>
+            <div class="branch-list" data-branch-list>${branchRowsHtml}</div>
+            <button type="button" class="add-btn" data-act="branch-add" style="margin-top:8px;">＋ 支社を追加</button>
+          </div>
+          <div class="field">
+            <label>テスト形式</label>
+            <input type="text" data-f="testFormat" value="${esc(data.testFormat)}" placeholder="例）Webテスト（SPI）、玉手箱">
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label>ビジネスモデル（複数選択可）</label>
+              <div class="biz-checkbox-row">
+                ${BIZ_MODEL_OPTIONS.map(o=>`<label><input type="checkbox" data-bizmodel="${esc(o)}" ${data.bizModels.includes(o)?'checked':''}>${esc(o)}</label>`).join("")}
+              </div>
+            </div>
+            <div class="field">
+              <label>ビジネスモデル その他（カンマ区切りで複数可）</label>
+              <input type="text" data-f="bizModelCustom" value="${esc(data.bizModels.filter(m=>!BIZ_MODEL_OPTIONS.includes(m)).join('、'))}" placeholder="例）D2C">
+            </div>
+          </div>
+          ${COMPANY_FIELDS.map(f=>`
+            <div class="field">
+              <label>${esc(f.label)}</label>
+              <textarea data-f="${f.key}" rows="2">${esc(data[f.key])}</textarea>
+            </div>`).join("")}
+          <div class="save-row">
+            <button class="icon-btn gold" data-act="save">保存</button>
+            <button class="icon-btn" data-act="cancel">キャンセル</button>
+            ${isNew?'':'<button class="icon-btn danger" data-act="delete" style="margin-left:auto;">削除</button>'}
+          </div>
+        </div>`;
+    }
+
+    const tab = companyTab[id] || "basic";
+    const bizTagsHtml = (data.bizModels&&data.bizModels.length) ? `<div class="biz-tags">${data.bizModels.map(m=>`<span class="biz-tag">${esc(m)}</span>`).join("")}</div>` : "";
+    const testFormatList = hasText(data.testFormat) ? data.testFormat.split(/[、,]/).map(s=>s.trim()).filter(hasText) : [];
+    const testFormatTagsHtml = testFormatList.length ? `<div class="biz-tags">${testFormatList.map(t=>`<span class="biz-tag test-tag">${esc(t)}</span>`).join("")}</div>` : `<div class="view-value empty" style="font-size:12px;">テスト形式 未入力</div>`;
+
+    const branchesViewHtml = (data.branches && data.branches.length) ? data.branches.map(b=>`
+      <div class="branch-view-row"><span class="blabel">${hasText(b.label)?esc(b.label):'支社'}:</span> ${hasText(b.address)?esc(b.address):'住所未入力'}</div>`).join("") : "";
+
+    const basicHtml = `
+        <div class="view-grid">
+          ${COMPANY_FIELDS.map(f=>`
+            <div>
+              <div class="view-label">${esc(f.label)}</div>
+              <div class="view-value ${hasText(data[f.key])?'':'empty'}">${hasText(data[f.key])?nl2br(data[f.key]):'未入力'}</div>
+            </div>`).join("")}
+        </div>
+        ${commuteHtmlFor(data)}`;
+
+    const scheduleHtml = renderScheduleTab(data);
+
+    const priorityClassMap = {"高":"priority-high","中":"priority-mid","低":"priority-low"};
+    const priorityBadgeClassMap = {"高":"high","中":"mid","低":"low"};
+    const priorityClass = priorityClassMap[data.priority] || "";
+    const priorityBadgeHtml = data.priority ? `<span class="priority-badge ${priorityBadgeClassMap[data.priority]}">志望度: ${esc(data.priority)}</span>` : "";
+
+    return `
+      <div class="card ${priorityClass}" data-id="${id}">
+        <div class="card-head">
+          <div>
+            <h3>${hasText(data.name)?esc(data.name):'（企業名未入力）'} ${priorityBadgeHtml}</h3>
+            <div style="font-size:12px; color:var(--ink-soft); margin-top:3px;">${esc(data.industry||'業界未入力')}${data.url?' ・ <a href="'+esc(data.url)+'" target="_blank" rel="noopener" style="color:var(--navy);">'+esc(data.url)+'</a>':''}</div>
+            <div style="font-size:12px; color:var(--ink-soft); margin-top:3px;">本社住所: ${hasText(data.address)?esc(data.address):'未入力'}</div>
+            ${branchesViewHtml}
+            ${testFormatTagsHtml}
+            ${bizTagsHtml}
+          </div>
+          <button class="icon-btn" data-act="edit">編集</button>
+        </div>
+        <div class="mini-tabs">
+          <button class="mini-tab-btn ${tab==='basic'?'active':''}" data-ctab="basic">基本情報</button>
+          <button class="mini-tab-btn ${tab==='schedule'?'active':''}" data-ctab="schedule">スケジュール${(data.schedules&&data.schedules.length)?' ('+data.schedules.length+')':''}</button>
+        </div>
+        ${tab==='basic' ? basicHtml : scheduleHtml}
+      </div>`;
+  }
+
+  function bindCompanyEvents(){
+    document.getElementById("add-company-btn").onclick = ()=>{
+      editing.company="new"; editing.companyError=null; editing.branchesDraft=[]; renderCompanies();
+    };
+    document.querySelectorAll('#companies-container .card').forEach(card=>{
+      const id = card.dataset.id;
+      const editBtn = card.querySelector('[data-act="edit"]');
+      if(editBtn) editBtn.addEventListener("click", ()=>{
+        editing.company=id; editing.companyError=null;
+        const target = state.companies.find(x=>x.id===id);
+        editing.branchesDraft = target && Array.isArray(target.branches) ? target.branches.map(b=>({label:b.label||"",address:b.address||""})) : [];
+        renderCompanies();
+      });
+
+      const cancelBtn = card.querySelector('[data-act="cancel"]');
+      if(cancelBtn) cancelBtn.addEventListener("click", ()=>{ editing.company=null; editing.companyError=null; editing.branchesDraft=null; renderCompanies(); });
+
+      const delBtn = card.querySelector('[data-act="delete"]');
+      if(delBtn) delBtn.addEventListener("click", ()=>{
+        state.companies = state.companies.filter(x=>x.id!==id);
+        saveState(); editing.company=null; renderCompanies();
+      });
+
+      card.querySelectorAll('[data-ctab]').forEach(tabBtn=>{
+        tabBtn.addEventListener("click", ()=>{
+          companyTab[id] = tabBtn.dataset.ctab;
+          renderCompanies();
+        });
+      });
+
+      const bizCustomInput = card.querySelector('[data-f="bizModelCustom"]');
+      function readBizModels(){
+        const checked = Array.from(card.querySelectorAll('[data-bizmodel]:checked')).map(cb=>cb.dataset.bizmodel);
+        const custom = bizCustomInput ? bizCustomInput.value.split("、").join(",").split(",").map(s=>s.trim()).filter(hasText) : [];
+        return checked.concat(custom);
+      }
+
+      const industrySelect = card.querySelector('[data-f="industrySelect"]');
+      const industryCustom = card.querySelector('[data-f="industryCustom"]');
+      if(industrySelect){
+        industrySelect.addEventListener("change", ()=>{
+          industryCustom.style.display = industrySelect.value==="その他" ? "" : "none";
+        });
+      }
+      function readIndustryValue(){
+        if(!industrySelect) return "";
+        return industrySelect.value==="その他" ? industryCustom.value.trim() : industrySelect.value;
+      }
+
+      function syncBranchesFromDOM(){
+        const rows = Array.from(card.querySelectorAll('[data-branch-idx]'));
+        editing.branchesDraft = rows.map(row=>({
+          label: row.querySelector('[data-bf="label"]').value,
+          address: row.querySelector('[data-bf="address"]').value
+        }));
+      }
+      const branchAddBtn = card.querySelector('[data-act="branch-add"]');
+      if(branchAddBtn) branchAddBtn.addEventListener("click", ()=>{
+        syncBranchesFromDOM();
+        editing.branchesDraft.push({label:"", address:""});
+        renderCompanies();
+      });
+      card.querySelectorAll('[data-act="branch-remove"]').forEach(btn=>{
+        btn.addEventListener("click", ()=>{
+          syncBranchesFromDOM();
+          const idx = Number(btn.dataset.idx);
+          editing.branchesDraft.splice(idx, 1);
+          renderCompanies();
+        });
+      });
+
+      const saveBtn = card.querySelector('[data-act="save"]');
+      if(saveBtn) saveBtn.addEventListener("click", ()=>{
+        const nameVal = card.querySelector('[data-f="name"]').value.trim();
+        if(!nameVal){
+          editing.companyError = "企業名を入力して下さい。";
+          renderCompanies();
+          return;
+        }
+        syncBranchesFromDOM();
+        const branchesVal = editing.branchesDraft.filter(b=>hasText(b.label)||hasText(b.address)).map(b=>({label:b.label.trim(),address:b.address.trim()}));
+        const getVal = f=>card.querySelector(`[data-f="${f}"]`).value;
+        if(id==="new"){
+          const obj = {id:uid(), name:nameVal, industry:readIndustryValue(), priority:getVal("priority"), url:getVal("url"), address:getVal("address"), branches:branchesVal, testFormat:getVal("testFormat"), bizModels:readBizModels(), schedules:[]};
+          COMPANY_FIELDS.forEach(f=>obj[f.key]=getVal(f.key));
+          state.companies.push(obj);
+        }else{
+          const target = state.companies.find(x=>x.id===id);
+          target.name = nameVal;
+          target.industry = readIndustryValue();
+          target.priority = getVal("priority");
+          target.url = getVal("url");
+          target.address = getVal("address");
+          target.branches = branchesVal;
+          target.testFormat = getVal("testFormat");
+          target.bizModels = readBizModels();
+          COMPANY_FIELDS.forEach(f=>target[f.key]=getVal(f.key));
+        }
+        saveState();
+        editing.company=null; editing.companyError=null; editing.branchesDraft=null;
+        renderCompanies();
+      });
+
+      /* ---- スケジュール ---- */
+      const addSchBtn = card.querySelector('[data-act="schedule-add"]');
+      if(addSchBtn) addSchBtn.addEventListener("click", ()=>{
+        editing.scheduleCompanyId = id; editing.scheduleId = "new"; renderCompanies();
+      });
+
+      card.querySelectorAll('[data-sid]').forEach(itemEl=>{
+        const sid = itemEl.dataset.sid;
+        const target = state.companies.find(x=>x.id===id);
+        if(!target) return;
+
+        const editBtn2 = itemEl.querySelector('[data-act="schedule-edit"]');
+        if(editBtn2) editBtn2.addEventListener("click", ()=>{
+          editing.scheduleCompanyId = id; editing.scheduleId = sid; renderCompanies();
+        });
+        const cancelBtn2 = itemEl.querySelector('[data-act="schedule-cancel"]');
+        if(cancelBtn2) cancelBtn2.addEventListener("click", ()=>{
+          editing.scheduleCompanyId = null; editing.scheduleId = null; renderCompanies();
+        });
+        const delBtn2 = itemEl.querySelector('[data-act="schedule-delete"]');
+        if(delBtn2) delBtn2.addEventListener("click", ()=>{
+          target.schedules = target.schedules.filter(x=>x.id!==sid);
+          saveState();
+          editing.scheduleCompanyId = null; editing.scheduleId = null;
+          renderCompanies();
+        });
+
+        const typeSelect = itemEl.querySelector('[data-f="scheduleType"]');
+        const typeCustom = itemEl.querySelector('[data-f="scheduleTypeCustom"]');
+        if(typeSelect){
+          typeSelect.addEventListener("change", ()=>{
+            typeCustom.style.display = typeSelect.value==="その他" ? "" : "none";
+          });
+        }
+        function readScheduleType(){
+          if(!typeSelect) return "";
+          return typeSelect.value;
+        }
+
+        const saveBtn2 = itemEl.querySelector('[data-act="schedule-save"]');
+        if(saveBtn2) saveBtn2.addEventListener("click", ()=>{
+          const s = target.schedules.find(x=>x.id===sid);
+          s.type = readScheduleType();
+          s.typeCustom = typeCustom ? typeCustom.value : "";
+          s.date = itemEl.querySelector('[data-f="scheduleDate"]').value;
+          s.time = itemEl.querySelector('[data-f="scheduleTime"]').value;
+          s.memo = itemEl.querySelector('[data-f="scheduleMemo"]').value;
+          saveState();
+          editing.scheduleCompanyId = null; editing.scheduleId = null;
+          renderCompanies();
+        });
+        const saveNewBtn2 = itemEl.querySelector('[data-act="schedule-save-new"]');
+        if(saveNewBtn2) saveNewBtn2.addEventListener("click", ()=>{
+          const type = readScheduleType();
+          const typeCustomVal = typeCustom ? typeCustom.value : "";
+          const date = itemEl.querySelector('[data-f="scheduleDate"]').value;
+          const time = itemEl.querySelector('[data-f="scheduleTime"]').value;
+          const memo = itemEl.querySelector('[data-f="scheduleMemo"]').value;
+          target.schedules.push({id:uid(), type, typeCustom:typeCustomVal, date, time, memo});
+          saveState();
+          editing.scheduleCompanyId = null; editing.scheduleId = null;
+          renderCompanies();
+        });
+        const cancelNewBtn2 = itemEl.querySelector('[data-act="schedule-cancel-new"]');
+        if(cancelNewBtn2) cancelNewBtn2.addEventListener("click", ()=>{
+          editing.scheduleCompanyId = null; editing.scheduleId = null;
+          renderCompanies();
+        });
+      });
+    });
+  }
+
+  /* ===================== AI相談 ===================== */
+  const MULTI_COMPANY_MODES = ["__compare__","__free__"];
+
+  function currentConsultationMode(){
+    return aiSelection.consultationPreset || "";
+  }
+  function isMultiCompanyMode(){
+    return MULTI_COMPANY_MODES.includes(currentConsultationMode());
+  }
+
+  function renderAI(){
+    document.getElementById("ai-error").classList.remove("show");
+    renderSelectedSummary();
+    renderAINotesTree();
+    renderAICompanyList();
+    document.getElementById("ai-consultation").value = aiSelection.consultationPreset;
+    document.getElementById("ai-consultation-free").value = aiSelection.consultationFree;
+    document.getElementById("ai-char-limit").value = aiSelection.charLimit;
+    const isFreeMode = aiSelection.consultationPreset==="__free__";
+    document.getElementById("ai-consultation-free-wrap").style.display = isFreeMode ? "" : "none";
+    document.getElementById("ai-consultation-free").disabled = !isFreeMode;
+    document.getElementById("ai-company-mode-badge").textContent = isMultiCompanyMode() ? "複数選択可" : "1社のみ";
+  }
+
+  function consultationLabel(){
+    const mode = currentConsultationMode();
+    if(mode==="__judge__") return "自分に合う企業か判定する";
+    if(mode==="__compare__") return "企業を比較する";
+    if(mode==="__similar__") return "類似企業を考える";
+    if(mode==="__free__") return aiSelection.consultationFree;
+    return aiSelection.consultationPreset || "";
+  }
+
+  function collectSelectedNoteSummaryLines(){
+    return NOTE_CATS.map(cat=>{
+      const subEntries = buildSubEntries(cat);
+      const picked = subEntries.filter(se=>aiSelection[cat.key][se.id]);
+      if(picked.length===0) return null;
+      return {label:cat.label, text:picked.map(se=>se.title).join("、")};
+    }).filter(Boolean);
+  }
+
+  function renderSelectedSummary(){
+    const wrap = document.getElementById("selected-summary");
+    const label = consultationLabel();
+    const companies = state.companies.filter(c=>aiSelection.companyIds.includes(c.id)).map(c=>c.name||"（企業名未入力）");
+    const noteLines = collectSelectedNoteSummaryLines();
+    if(!hasText(label) && companies.length===0 && noteLines.length===0){
+      wrap.innerHTML = `<div class="empty-summary empty">まだ相談内容・就活メモ・企業が選択されていません。</div>`;
+      wrap.classList.add("empty");
+      return;
+    }
+    wrap.classList.remove("empty");
+    wrap.innerHTML = `
+      <div class="stitle">現在選択中の内容</div>
+      <div class="srow"><span class="slabel">相談内容</span><span class="sval">${hasText(label)?esc(label):'未選択'}</span></div>
+      <div class="srow"><span class="slabel">企業</span><span class="sval">${companies.length?esc(companies.join("、")):'未選択'}</span></div>
+      ${noteLines.length? noteLines.map(l=>`<div class="srow"><span class="slabel">${esc(l.label)}</span><span class="sval">${esc(l.text)}</span></div>`).join("") : `<div class="srow"><span class="slabel">就活メモ</span><span class="sval">未選択</span></div>`}
+    `;
+  }
+
+  const NOTE_CATS = [
+    {key:"profile", label:"プロフィール情報"},
+    {key:"axis", label:"就活の軸", type:"fields", fields:[
+      {key:"criteria",label:"企業選びの基準"},{key:"important",label:"働く上で大切にしたいこと"}
+    ]},
+    {key:"selfAnalysis", label:"自己分析", type:"fields", fields:[
+      {key:"strength",label:"長所"},{key:"weakness",label:"短所"}
+    ]},
+    {key:"gakuchikaIn", label:"ガクチカ（学内）", type:"list"},
+    {key:"gakuchikaOut", label:"ガクチカ（学外）", type:"list"},
+    {key:"industries", label:"志望業種/職種", type:"list"}
+  ];
+
+  function buildProfileSubEntries(){
+    const p = state.notes.profile;
+    const arr = [];
+    const schoolText = [p.university,p.faculty,p.department,p.lab].filter(hasText).join(" / ");
+    if(hasText(schoolText)) arr.push({id:"school", title:"大学名・学部・学科・所属研究室", content:schoolText});
+    if(hasText(p.license)) arr.push({id:"license", title:"資格", content:p.license});
+    if(hasText(p.club)) arr.push({id:"club", title:"所属サークル", content:p.club});
+    return arr;
+  }
+
+  function buildSubEntries(cat){
+    if(cat.key==="profile") return buildProfileSubEntries();
+    if(cat.type==="fields"){
+      return cat.fields.filter(f=>hasText(state.notes[cat.key][f.key])).map(f=>({id:f.key, title:f.label, content:state.notes[cat.key][f.key]}));
+    }
+    const list = state.notes[cat.key];
+    return list.map(item=>({
+      id:item.id,
+      title: cat.key==="industries" ? industryItemTitle(item) : (item.title||"（無題）"),
+      content: cat.key==="industries" ? item.reason : item.content
+    }));
+  }
+
+  function renderAINotesTree(){
+    const wrap = document.getElementById("ai-notes-tree");
+    if(!anyNotesRegistered()){
+      wrap.innerHTML = `<div class="empty-state"><div class="glyph">📝</div><p>就活メモが登録されていません。<br>先に「就活メモ」から登録してください。</p></div>`;
+      return;
+    }
+
+    wrap.innerHTML = NOTE_CATS.map(cat=>{
+      const subEntries = buildSubEntries(cat);
+      const hasAny = subEntries.length>0;
+
+      if(!hasAny){
+        return `<div class="tree-major">
+          <div class="tree-major-head disabled"><input type="checkbox" disabled>${esc(cat.label)}（未登録）</div>
+        </div>`;
+      }
+
+      const isSingle = cat.key==="industries";
+
+      if(isSingle){
+        const selectedId = Object.keys(aiSelection[cat.key]).find(id=>aiSelection[cat.key][id]) || "";
+        const selectedEntry = subEntries.find(se=>se.id===selectedId);
+        const optionsHtml = `<option value="">選択してください</option>` + subEntries.map(se=>
+          `<option value="${esc(se.id)}" ${se.id===selectedId?'selected':''}>${esc(se.title)}</option>`).join("");
+        const previewHtml = selectedEntry ? `<div class="content-preview" style="margin-top:6px;">${esc((selectedEntry.content||"").slice(0,60))}${(selectedEntry.content||"").length>60?'…':''}</div>` : "";
+        return `<div class="tree-major">
+          <div class="tree-major-head">${esc(cat.label)}<span style="font-weight:400; font-size:11.5px; color:var(--ink-soft); margin-left:6px;">（登録した業種/職種から選択）</span></div>
+          <div class="tree-sub">
+            <select data-cat="${cat.key}" data-industry-select>${optionsHtml}</select>
+            ${previewHtml}
+          </div>
+        </div>`;
+      }
+
+      const allChecked = subEntries.every(se=>!!aiSelection[cat.key][se.id]);
+      const subHtml = subEntries.map(se=>`
+        <label>
+          <input type="checkbox" data-cat="${cat.key}" data-sub="${se.id}" ${aiSelection[cat.key][se.id]?'checked':''}>
+          <span><strong>${esc(se.title)}</strong><br><span class="content-preview">${esc((se.content||"").slice(0,40))}${(se.content||"").length>40?'…':''}</span></span>
+        </label>`).join("");
+
+      return `<div class="tree-major">
+        <div class="tree-major-head"><input type="checkbox" data-major="${cat.key}" ${allChecked?'checked':''}>${esc(cat.label)}</div>
+        <div class="tree-sub">${subHtml}</div>
+      </div>`;
+    }).join("");
+
+    wrap.querySelectorAll('[data-major]').forEach(cb=>{
+      cb.addEventListener("change", ()=>{
+        const catKey = cb.dataset.major;
+        const cat = NOTE_CATS.find(c=>c.key===catKey);
+        const subEntries = buildSubEntries(cat).map(se=>se.id);
+        subEntries.forEach(id=>{ aiSelection[catKey][id] = cb.checked; });
+        renderAINotesTree();
+        renderSelectedSummary();
+      });
+    });
+    wrap.querySelectorAll('.tree-major-head:not(.disabled)').forEach(head=>{
+      const cb = head.querySelector('[data-major]');
+      if(!cb) return;
+      head.addEventListener("click", (e)=>{
+        if(e.target===cb) return;
+        cb.checked = !cb.checked;
+        cb.dispatchEvent(new Event("change"));
+      });
+    });
+    wrap.querySelectorAll('input[type="checkbox"][data-sub]').forEach(cb=>{
+      cb.addEventListener("change", ()=>{
+        aiSelection[cb.dataset.cat][cb.dataset.sub] = cb.checked;
+        renderAINotesTree();
+        renderSelectedSummary();
+      });
+    });
+    wrap.querySelectorAll('select[data-industry-select]').forEach(sel=>{
+      sel.addEventListener("change", ()=>{
+        aiSelection[sel.dataset.cat] = {};
+        if(sel.value){ aiSelection[sel.dataset.cat][sel.value] = true; }
+        renderAINotesTree();
+        renderSelectedSummary();
+      });
+    });
+  }
+
+  function renderAICompanyList(){
+    const wrap = document.getElementById("ai-company-list");
+    if(state.companies.length===0){
+      wrap.innerHTML = `<div class="empty-state"><div class="glyph">🏢</div><p>企業情報が登録されていません。<br>先に「企業情報」から登録してください。</p></div>`;
+      return;
+    }
+    const multi = isMultiCompanyMode();
+    wrap.innerHTML = state.companies.map(c=>{
+      const priorityClassMap = {"高":"priority-high","中":"priority-mid","低":"priority-low"};
+      const priorityBadgeClassMap = {"高":"high","中":"mid","低":"low"};
+      const priorityClass = priorityClassMap[c.priority] || "";
+      const priorityBadgeHtml = c.priority ? `<span class="priority-badge ${priorityBadgeClassMap[c.priority]}" style="margin-left:6px;">志望度: ${esc(c.priority)}</span>` : "";
+
+      return `
+        <div class="company-pick ${aiSelection.companyIds.includes(c.id)?'selected':''} ${priorityClass}" data-id="${c.id}" style="${priorityClass?'border-width:2px;':''}">
+          <input type="checkbox" ${aiSelection.companyIds.includes(c.id)?'checked':''} data-pick="${c.id}">
+          <div>
+            <div class="cname">${hasText(c.name)?esc(c.name):'（企業名未入力）'} ${priorityBadgeHtml}</div>
+            <div class="cindustry">${esc(c.industry||'業界未入力')}</div>
+          </div>
+        </div>`;
+    }).join("");
+
+    wrap.querySelectorAll("[data-pick]").forEach(cb=>{
+      cb.addEventListener("change", ()=>{
+        if(cb.checked){
+          if(!multi){ aiSelection.companyIds = []; }
+          aiSelection.companyIds.push(cb.dataset.pick);
+        }else{
+          aiSelection.companyIds = aiSelection.companyIds.filter(x=>x!==cb.dataset.pick);
+        }
+        renderAICompanyList();
+        renderSelectedSummary();
+      });
+    });
+    wrap.querySelectorAll(".company-pick").forEach(row=>{
+      const cb = row.querySelector("[data-pick]");
+      if(!cb) return;
+      row.addEventListener("click", (e)=>{
+        if(e.target===cb) return;
+        cb.checked = !cb.checked;
+        cb.dispatchEvent(new Event("change"));
+      });
+    });
+  }
+
+  document.getElementById("ai-consultation").addEventListener("change", (e)=>{
+    aiSelection.consultationPreset = e.target.value;
+    if(e.target.value!=="__free__"){ aiSelection.consultationFree = ""; document.getElementById("ai-consultation-free").value = ""; }
+    if(!isMultiCompanyMode() && aiSelection.companyIds.length>1){
+      aiSelection.companyIds = [aiSelection.companyIds[0]];
+    }
+    renderAI();
+  });
+  document.getElementById("ai-consultation-free").addEventListener("input", (e)=>{
+    aiSelection.consultationFree = e.target.value;
+    renderSelectedSummary();
+  });
+  document.getElementById("ai-char-limit").addEventListener("input", (e)=>{
+    aiSelection.charLimit = e.target.value;
+  });
+
+  function showAIErrors(msgs){
+    const el = document.getElementById("ai-error");
+    el.innerHTML = msgs.map(m=>esc(m)).join("<br>");
+    el.classList.add("show");
+  }
+
+  function collectCategoryText(cat){
+    const subEntries = buildSubEntries(cat);
+    const picked = subEntries.filter(se=>aiSelection[cat.key][se.id]);
+    if(picked.length===0) return null;
+    return picked.map(se=>`${se.title}: ${se.content}`).join("\n");
+  }
+
+  function companyBlock(company){
+    const lines = [`企業名: ${company.name}`];
+    if(hasText(company.industry)) lines.push(`業界: ${company.industry}`);
+    if(hasText(company.url)) lines.push(`URL: ${company.url}`);
+    if(hasText(company.priority)) lines.push(`志望度: ${company.priority}`);
+    if(hasText(company.address)) lines.push(`住所（本社）: ${company.address}`);
+    if(company.branches && company.branches.length){
+      const branchText = company.branches.filter(b=>hasText(b.address)).map(b=>`${hasText(b.label)?b.label:'支社'}: ${b.address}`).join("、");
+      if(hasText(branchText)) lines.push(`住所（支社）: ${branchText}`);
+    }
+    if(company.bizModels && company.bizModels.length) lines.push(`ビジネスモデル: ${company.bizModels.join("、")}`);
+    if(hasText(company.testFormat)) lines.push(`テスト形式: ${company.testFormat}`);
+    if(hasText(company.business)) lines.push(`事業・仕事内容: ${company.business}`);
+    if(hasText(company.mvv)) lines.push(`企業理念・MVV: ${company.mvv}`);
+    if(hasText(company.personality)) lines.push(`求める人物像: ${company.personality}`);
+    if(hasText(company.strength)) lines.push(`企業の特徴・強み: ${company.strength}`);
+    if(hasText(company.selection)) lines.push(`選考情報: ${company.selection}`);
+    if(hasText(company.myView)) lines.push(`自分から見た企業イメージ: ${company.myView}`);
+    if(hasText(company.memo)) lines.push(`メモ: ${company.memo}`);
+    if(company.schedules && company.schedules.length){
+      const schedText = company.schedules
+        .filter(s=>hasText(s.date))
+        .slice()
+        .sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:0)
+        .map(s=>`${s.date}${hasText(s.time)?' '+s.time:''} ${scheduleTypeLabel(s)}${hasText(s.memo)?'（'+s.memo+'）':''}`)
+        .join("、");
+      if(hasText(schedText)) lines.push(`選考スケジュール: ${schedText}`);
+    }
+    return `#### ${company.name}\n` + lines.join("\n");
+  }
+
+  document.getElementById("generate-btn").addEventListener("click", ()=>{
+    document.getElementById("ai-error").classList.remove("show");
+
+    const errors = [];
+    const mode = currentConsultationMode();
+
+    if(state.companies.length===0){
+      errors.push("企業情報を最低一件登録して下さい。");
+    }else if(aiSelection.companyIds.length===0){
+      errors.push("企業を選択して下さい。");
+    }else if(!isMultiCompanyMode() && aiSelection.companyIds.length>1){
+      errors.push("この相談内容では企業は1社のみ選択できます。");
+    }
+
+    if(!anyNotesRegistered()){
+      errors.push("就活メモを最低一件登録して下さい。");
+    }else{
+      const anyNoteSelected = NOTE_CATS.some(cat=>collectCategoryText(cat)!==null);
+      if(!anyNoteSelected){
+        errors.push("就活メモを選択して下さい。");
+      }
+    }
+
+    if(!mode){
+      errors.push("相談内容を選択して下さい。");
+    }else if(mode==="__free__" && !hasText(aiSelection.consultationFree)){
+      errors.push("相談内容を記入してください。");
+    }
+
+    if(errors.length>0){
+      showAIErrors(errors);
+      return;
+    }
+
+    const companies = state.companies.filter(c=>aiSelection.companyIds.includes(c.id));
+
+    const noteSectionTitles = {
+      profile:"プロフィール（大学名・学部・学科・所属研究室 / 資格 / サークル）",
+      axis:"就活の軸",
+      selfAnalysis:"自己分析（長所・短所）",
+      gakuchikaIn:"ガクチカ（学内）",
+      gakuchikaOut:"ガクチカ（学外）",
+      industries:"志望業種・職種・理由"
+    };
+    const noteSections = NOTE_CATS
+      .map(cat=>({key:cat.key, text:collectCategoryText(cat)}))
+      .filter(s=>s.text!==null)
+      .map(s=>`### ${noteSectionTitles[s.key]}\n${s.text}`)
+      .join("\n\n");
+
+    const companiesText = companies.map(companyBlock).join("\n\n");
+    const charLimitText = hasText(aiSelection.charLimit) ? aiSelection.charLimit : "指定なし（内容に応じて適切な長さ）";
+
+    const prompt = `# Role
+あなたは就職活動を支援する優秀なキャリアアドバイザーです。
+学生の経験や価値観と企業情報を客観的に分析し、相談内容に応じた具体的かつ実践的なアドバイスを提供してください。
+
+# Input Data
+
+## 1. 学生情報（就活メモ）
+${noteSections}
+
+## 2. 志望企業情報（${companies.length}社）
+${companiesText}
+
+## 3. 相談内容
+${consultationLabel()}
+
+## 4. ES回答テキストの文字数目安
+${charLimitText}
+
+# Task
+入力された「学生情報（就活メモ）」と「志望企業情報」を照らし合わせ、指定された「相談内容」に対する回答を作成してください。
+学生の経験や強みが企業の求める人物像や特徴とどのようにマッチするか、具体性をもって分析・提案してください。
+相談内容が「企業を比較する」場合は複数企業を軸ごとに比较してください。「自分に合う企業か判定する」場合は適合度を明確に評価してください。
+相談内容が「ガクチカ」「志望動機」「面接対策（想定質問への回答例）」など、ES・面接でそのまま使う回答文を作るものである場合は、学生本人の一人称視点で書かれた完成された回答文そのものを作成してください。
+
+# Output Format
+以下の構成・ルールを厳守して出力してください。Markdownの見出し記号（#や##）・箇条書き記号（-や・）・太字（**）は一切使用しないでください。
+
+最初に、次の2つの区切り線の間に「ES・回答用テキスト」だけを出力してください。この区切り線の間だけをコピーすれば、そのままESにコピペできる状態にしてください。
+-----ES回答ここから-----
+（ここに、学生本人が一人称（「私は」）で書いた、ES・面接でそのまま使える完成文章のみを記載する。見出し・注釈・箇条書き・記号・前置き（「以下が回答です」等）は一切含めず、本文の文章だけを書くこと。段落は自然な文章の流れで区切り、文字数の目安は「${charLimitText}」とする。相談内容の性質上、比較や判定など回答文形式にそぐわない場合は、通常の文章で分かりやすく回答すること。）
+-----ES回答ここまで-----
+
+上記の区切り線より後ろには、通常の文章で以下を続けてください（この部分はES本文に含めないでください。コピペ対象外です）。
+
+【アピールポイントの補足】
+上記の回答文で活かした学生の経験・強みと企業との関連性を説明してください。
+
+【深掘り・改善アドバイス】
+ES・面接対策に向けて追加で整理すべき情報や着眼点を説明してください。`;
+
+    lastPrompt = prompt;
+    openResultModal(prompt);
+  });
+
+  function openResultModal(promptText){
+    document.getElementById("modal-pre").textContent = promptText;
+    document.getElementById("modal-copy-msg").classList.remove("show");
+    document.getElementById("result-modal").classList.add("show");
+  }
+  document.getElementById("modal-close-btn").addEventListener("click", ()=>{
+    document.getElementById("result-modal").classList.remove("show");
+  });
+  document.getElementById("result-modal").addEventListener("click", (e)=>{
+    if(e.target.id==="result-modal") document.getElementById("result-modal").classList.remove("show");
+  });
+  document.getElementById("modal-copy-btn").addEventListener("click", ()=>{
+    const msg = document.getElementById("modal-copy-msg");
+    const finish = ()=>{ msg.classList.add("show"); setTimeout(()=>msg.classList.remove("show"), 1600); };
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(lastPrompt).then(finish).catch(finish);
+    }else{
+      finish();
+    }
+  });
+
+  /* ===================== キーボードショートカット ===================== */
+  let lastInteractedEl = null;
+  document.addEventListener("click", (e)=>{ lastInteractedEl = e.target; }, true);
+
+  function currentEditScope(){
+    const source = (lastInteractedEl && document.body.contains(lastInteractedEl)) ? lastInteractedEl : document.activeElement;
+    return (source && source.closest) ? source.closest(".card, .sub-item, .schedule-item") : null;
+  }
+
+  document.addEventListener("keydown", (e)=>{
+    if(!(e.ctrlKey || e.metaKey)) return;
+    const key = e.key.toLowerCase();
+    if(key!=="s" && key!=="e" && key!=="d") return;
+    e.preventDefault();
+
+    if(key==="s"){
+      const scope = currentEditScope();
+      let btn = scope ? scope.querySelector('[data-act="save"], [data-act="save-new"], [data-act="schedule-save"], [data-act="schedule-save-new"]') : null;
+      if(!btn) btn = document.querySelector('[data-act="save"]:not([style*="display: none"]), [data-act="save-new"], [data-act="schedule-save"], [data-act="schedule-save-new"]');
+      if(btn) btn.click();
+    }else if(key==="e"){
+      const scope = currentEditScope();
+      let btn = scope ? scope.querySelector('[data-act="edit"], [data-act="schedule-edit"]') : null;
+      if(!btn) btn = document.querySelector('[data-act="edit"], [data-act="schedule-edit"]');
+      if(btn) btn.click();
+    }else if(key==="d"){
+      const scope = currentEditScope();
+      let btn = scope ? scope.querySelector('[data-act="delete"], [data-act="schedule-delete"]') : null;
+      if(!btn) btn = document.querySelector('[data-act="delete"], [data-act="schedule-delete"]');
+      if(btn) btn.click();
+    }
+  });
+
+  /* ===================== 初期表示 ===================== */
+  renderHome();
+</script>
+</body>
+</html>
